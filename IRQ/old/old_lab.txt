@@ -1,0 +1,80 @@
+Vaittinen, Matti (Nokia - FI/Oulu) <matti.vaittinen@nokia.com>	13. helmikuuta 2017 klo 15.25
+Vast. ott.: "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>
+
+
+-----Original Message-----
+From: Matti Vaittinen [mailto:matti.vaittinen@nokia.com]
+Sent: Friday, February 10, 2017 8:15 PM
+To: Aijala, Joonas (Nokia - FI/Oulu) <joonas.aijala@nokia.com>; Aarnipuro, Timo (Nokia - FI/Oulu) <timo.aarnipuro@nokia.com>; Vaittinen, Matti (Nokia - FI/Oulu) <matti.vaittinen@nokia.com>
+Subject: Koulutusdiipadaapaa
+
+Näyttääkö Järkevälle?
+
+Modify kernel rtc-cmos.c (patch)
+
+make menuconfig
+Enable CONFIG_IRQSOFF_TRACER
+
+make
+make modules
+sudo make modules_install
+sudo make install
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+reboot
+
+Training 3, lab1
+
+Take the test module from training 1 lab1 as a base.
+write a irq handler for our interrupt. The handler can just issue a print.
+
+
+Prototype for handler can be found by investigating the
+request_irq() function which you can use from init in order to register the interrupt handler. IRQ number should be the number your kernel is printing from modified rtc-cmos.c Note that we are now using same interrupt as rtc-cmos so we need to state this in the flags when we request the interrupt (IRQF_SHARED). Remember also to return the IRQ_HANDLED as return value from handler (why?)
+
+Training 3, lab2.
+
+Try doing bad things from interrupt handler.
+
+a) Try calling msleep(). what do you observe? (Why?)
+b) Try disabling irq (using disable_irq()) from handler. (issue print before and after disabling) what do you observe? (Why?)
+
+
+Training 3, lab3.
+
+Copy the module skeleton for locking excercise from irq_skeleton folder.
+
+This module creates a kernel thread which constantly writes data to an array. Thread fills array first with the character '0'. Then with '1', ...
+
+Module also installs the handler for the rtc interrupt. When interrupt occurs the handler copies array and checks if array contains only one type of character. For example array full of '0's or '1's is Ok, but array with '0's and '1's is not. The purpose of this excercise is to try out locking mechanisms which are usable with interrupts.
+
+Try using both the spin lock and mutex. Try mutex_lock/mutex_unlock, spin_lock/spin_unlock, spin_lock_irqsave/spin_unlock_irqrestore. Try running hwclock -r multiple times in a row. What do you observe and why?
+
+Bonus question, why do we have call to schedule() in the thread?
+
+Training 3, lab4.
+
+Let's try simple irq disabling as a protection mechanism. Do following modifications to irq_skeleton:
+
+    1. Add mdelay(10) in irq handler before the call to memcpy.
+    2. Try disabling interrupt for the duration of array filling. Use both
+    disable_irq_nosync() and disable_irq(). Remember to call enable_irq() to re-    enable the interrupt. Try out the hwclock -r multiple times in a row. What d    o you observe and why?
+
+
+Training 3, lab5.
+
+Typically we try to minimize time spent in hw irq context (why?). Hence irq handlers are traditionally divided to "top half" and "bottom half". Top half is executed in the HW irq context and it should only do minimal amount of work. In many cases top half just check that interrupt is really for the module and everything else is done at bottom half. In cases where timing is important the top half may do actual work.
+
+Let's now divide the irq_skeleton handler in top and bottom half so that top half only copies the data from array to some other location (If you use threaded handler you can for example modify and use the g_irqdata as storage) and bottom half performs the array "integrity checking".
+
+For division you can use:
+
+- threaded interrupt handler (request_threaded_irq()). Primary handler is now your top half and thread function is the bottom half.
+
+- work_queue (DECLARE_WORK() or __WORK_INITIALIZER(), schedule_work). __WORK_INITIALIZER() allows you to encapsulate the struct work_struct inside another struct (which can have a data storage for array copyas other member) and use container_of() to access the encapsulating struct.
+
+- timer
+init_timer, add_timer(), set data,function,expires
+
+- tasklet
+DECLARE_TASKLET(), tasklet_schedule()
+

@@ -26,13 +26,18 @@
 %-------------- topic page
 
 \begin{frame}{Topics}
-	\begin{enumerate}
-		\item What and Why is a PMIC?
-		\item Regulator provider/consumer
-		\item Monitoring for abnormal conditions
-		\item Setting safety limits
-		\item A helper for sending notifications for “anomalies”
-	\end{enumerate}
+\tableofcontents
+%	\begin{itemize}
+%		\item What and Why is a PMIC?
+%		\item PMIC Drivers
+%		\begin{enumerate}
+%			\item MFD - Multi Function Devices
+%			\item Regulators
+%		\end{enumerate}
+%		\item Monitoring for abnormal conditions
+%		\item Setting safety limits
+%		\item A helper for sending notifications for “anomalies”
+%	\end{itemize}
 \end{frame}
 
 %-------------- about me page
@@ -42,7 +47,7 @@
 	\column{0.58\linewidth}
 		\begin{itemize}
 			\item Matti Vaittinen
-			\item Kernel/Diver developer at RPHM Semiconductor
+			\item Kernel/Driver developer at ROHM Semiconductor
 			\item Worked at Nokia BTS projects (networking, clock \& sync) 2005 – 2017
 			\item Currently mainly developing/maintaining upstream Linux device drivers for ROHM ICs
 		\end{itemize}
@@ -60,8 +65,11 @@
 \tikzstyle{psys} = [rectangle, rounded corners, minimum width=3cm, minimum height=3cm,text centered, text width=3cm, draw=black, fill=red!30]
 \tikzstyle{socs} = [rectangle, rounded corners, minimum width=3cm, minimum height=3cm,text centered, text width=3cm, draw=black, fill=green!30]
 
-\begin{frame}[t]{Powering a processor}\vspace{4pt}
+\begin{frame}
+\section{What and Why is a PMIC?}
+\end{frame}
 
+\begin{frame}[t]{Powering a processor}\vspace{4pt}
 \begin{itemize}
 	\item Processor and peripherals need power
 	\item Can be as simple as a dummy DC power source with correct voltage
@@ -110,7 +118,7 @@
 		\node (nvcc_dram) [s_psys, below of=nvcc_1v8] {BUCK8 1.1V};
 		\node (nvcc_3v3) [s_psys, below of=nvcc_dram] {BUCK6 3.3V};
 		\node (vdd_phy_1v2) [s_psys, below of=nvcc_3v3] {LDO6 1.2V};
-		\node (ldo5) [s_psys, below of=vdd_phy_1v2] {LDO6 1.2V};
+		\node (ldo5) [s_psys, below of=vdd_phy_1v2] {LDO5 3.3V};
 
 		\draw [arrow] (nvcc_snvs) node[anchor=south, xshift=3cm] {\scriptsize NVCC-SNVS} -|  ([xshift=1.6cm] imx8);
 		\draw [arrow] (vdd_snvs) node[anchor=south, xshift=3cm] {\scriptsize VDD-SNVS} -| ([xshift=0.5cm] imx8);
@@ -125,7 +133,7 @@
 		\draw [arrow] (nvcc_3v3) node[anchor=north, xshift=3cm] {\scriptsize NVCC-3V3} -| ([xshift=-0.5cm] imx8);
 
 		\draw [arrow] (vdd_phy_1v2) node[anchor=north, xshift=3cm] {\scriptsize VDD-PHY-1V2} -| ([xshift=0.5cm] imx8);
-		\draw [arrow] (ldo5) node[anchor=north, xshift=3cm] {\scriptsize VDD-PHY-1V2} -| ([xshift=1.6cm] imx8);
+		\draw [arrow] (ldo5) node[anchor=north, xshift=3cm] {\scriptsize LDO5-OUT} -| ([xshift=1.6cm] imx8);
 	\end{tikzpicture}
 	\end{columns}
 \end{frame}
@@ -194,6 +202,12 @@ PMIC - Power Management Integrated Circuit
 \includegraphics[width=1\linewidth]{img/pmic_block.png}
 \end{frame}
 
+\begin{frame}
+\section{PMIC drivers}
+\subsection{MFD and subdevices}
+\subsection{Regulators}
+\end{frame}
+
 %--------------  MFD page
 
 \metroset{block=fill}
@@ -231,6 +245,15 @@ PMIC - Power Management Integrated Circuit
 \includegraphics[width=1\linewidth]{img/regulator_users.png}
 \end{frame}
 
+
+\begin{frame}
+\section{Monitoring for abnormal conditions}
+\subsection{Severity levels and limit values}
+\subsection{Regulator errors and notifications}
+\subsection{Helpers and examples}
+\end{frame}
+
+
 %-------------- notification / error flags page
 
 \begin{frame}[t]{Detecting undexpected}\vspace{4pt}
@@ -263,7 +286,7 @@ PMIC - Power Management Integrated Circuit
 %--------------  setting safety limits via device-tree page
 
 \begin{frame}[t]{Safety limits, devicetree}\vspace{4pt}
-\onslide<1>{
+\onslide<1-2>{
 \begin{block}{Property format:}
 \begin{itemize}
 	\item  regulator-\textless event \textgreater-\textless severity \textgreater-\textless unit \textgreater = value
@@ -277,9 +300,11 @@ Over current:
 	\item regulator-oc-warn-microamp
 \end{itemize}
 
-Similar for Over voltage (oc), under voltage (uv) and temperature (temp):
-
-values:
+Similar for Over voltage (oc), under voltage (uv) and temperature (temp)
+}
+\onslide<2>{
+\par
+Values:
 \begin{itemize}
 	\item 0 =\textgreater disable
 	\item 1 =\textgreater enable
@@ -287,7 +312,7 @@ values:
 \end{itemize}
 }
 
-\only<2->{
+\only<3->{
 \textcolor{red}{\textbf{What if hardware does not support given limit?}}
 }
 \end{frame}
@@ -679,11 +704,21 @@ Fill possible errors this IRQ may indicate and register the helper
 int ovd_errs = REGULATOR_ERROR_OVER_VOLTAGE_WARN |
 	 REGULATOR_ERROR_REGULATION_OUT;
 
-ret = devm_regulator_irq_helper(&pdev->dev, &bd9576_notif_ovd, irq,
-		 0, ovd_errs, NULL,
-                                &ovd_devs[0], BD9576_NUM_OVD_REGULATORS);
+ret = devm_regulator_irq_helper(&pdev->dev, &bd9576_notif_ovd,
+				irq, 0, ovd_errs, NULL,
+				&ovd_devs[0],
+				BD9576_NUM_OVD_REGULATORS);
 
 \end{lstlisting}
+\end{frame}
+
+\begin{frame}{Summary}
+\begin{itemize}
+	\item powering up a modern SOC is not simple
+	\item PMIC is an IC trying to integrate powering related features into single chip
+	\item Many PMICs include functional-safety features
+	\item There is some existing support for indicating abnormal events
+\end{itemize}
 \end{frame}
 
 \begin{frame}{No answers guaranteed}

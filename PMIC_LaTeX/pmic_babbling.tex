@@ -18,26 +18,23 @@
 \begin{document}
 
 %-------------- title
-\begin{frame}
+\addtocounter{framenumber}{-1}
+\begin{frame}[plain]
 	\titlepage
 \end{frame}
 
-
 %-------------- topic page
 
-\begin{frame}{Topics}
+\metroset{block=fill}
+
+\begin{frame}[t]{Topics} \vspace{4pt}
+\begin{block}{Goal}
+What is PMIC \\
+Regulator errors and notifications \\
+Functional-safety helpers in regulator subsystem
+\end{block} \vspace{8pt}
+
 \tableofcontents
-%	\begin{itemize}
-%		\item What and Why is a PMIC?
-%		\item PMIC Drivers
-%		\begin{enumerate}
-%			\item MFD - Multi Function Devices
-%			\item Regulators
-%		\end{enumerate}
-%		\item Monitoring for abnormal conditions
-%		\item Setting safety limits
-%		\item A helper for sending notifications for “anomalies”
-%	\end{itemize}
 \end{frame}
 
 %-------------- about me page
@@ -65,7 +62,8 @@
 \tikzstyle{psys} = [rectangle, rounded corners, minimum width=3cm, minimum height=3cm,text centered, text width=3cm, draw=black, fill=red!30]
 \tikzstyle{socs} = [rectangle, rounded corners, minimum width=3cm, minimum height=3cm,text centered, text width=3cm, draw=black, fill=green!30]
 
-\begin{frame}
+\addtocounter{framenumber}{-1}
+\begin{frame}[plain]
 \section{What and Why is a PMIC?}
 \end{frame}
 
@@ -102,7 +100,7 @@
 
 	 Modern SOCs can require multiple specific voltages
 
-	\column{0.72\linewidth}
+	\column{0.72\linewidth} \vspace{4pt}
 
 	\begin{tikzpicture}[node distance=0.6cm]
 		\node (nvcc_snvs) [s_psys] {LDO1 1.8V};
@@ -202,15 +200,16 @@ PMIC - Power Management Integrated Circuit
 \includegraphics[width=1\linewidth]{img/pmic_block.png}
 \end{frame}
 
-\begin{frame}
+%============== Section PMIC drivers
+
+\addtocounter{framenumber}{-1}
+\begin{frame}[plain]
 \section{PMIC drivers}
 \subsection{MFD and subdevices}
 \subsection{Regulators}
 \end{frame}
 
 %--------------  MFD page
-
-\metroset{block=fill}
 
 \begin{frame}[t]{Multi Function Devices}
 	\begin{columns}
@@ -245,8 +244,10 @@ PMIC - Power Management Integrated Circuit
 \includegraphics[width=1\linewidth]{img/regulator_users.png}
 \end{frame}
 
+%============== Section Functional-safety
 
-\begin{frame}
+\addtocounter{framenumber}{-1}
+\begin{frame}[plain]
 \section{Monitoring for abnormal conditions}
 \subsection{Severity levels and limit values}
 \subsection{Regulator errors and notifications}
@@ -710,6 +711,13 @@ ret = devm_regulator_irq_helper(&pdev->dev, &bd9576_notif_ovd,
 				BD9576_NUM_OVD_REGULATORS);
 
 \end{lstlisting}
+\end{frame}
+
+%============== Section Wrap-up
+
+\addtocounter{framenumber}{-1}
+\begin{frame}[plain]
+\section{Wrap it up}
 \end{frame}
 
 \begin{frame}{Summary}

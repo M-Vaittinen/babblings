@@ -1,6 +1,4 @@
 \documentclass[10pt]{beamer}
-%\usetheme{Warsaw}
-%\usetheme{AnnArbor}
 \usetheme[progressbar=frametitle]{metropolis}
 \setbeamertemplate{frame numbering}[fraction]
 \usecolortheme{beaver}
@@ -49,8 +47,7 @@
 			\item Currently mainly developing/maintaining upstream Linux device drivers for ROHM ICs
 		\end{itemize}
 	\column{0.38\linewidth}
-		\includegraphics[width=1\linewidth]{me.png}
-		%\includegraphics[width=.8\linewidth]{me.png}
+		\includegraphics[width=1\linewidth]{img/me.png}
 	\end{columns}
 \end{frame}
 
@@ -73,7 +70,6 @@
 
 \vfill
 \centering
-%\begin{minipage}[c]{.5\textwidth}
 \begin{minipage}[c]{.75\textwidth}
 %  \flushright
 
@@ -81,10 +77,6 @@
 	\node (psy) [psys] {DC-source};
 	\node (soc) [socs, right of=psy] {SOC};
 	\draw [arrow] (psy) -- node[anchor=south] {+5V} (soc);
-%  \filldraw[fill=green] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
-  %\fill[green] (90:2) -- (210:2) -- (-30:2) -- cycle;
-%  \fill[blue,path fading=west] (80:4) -- (210:4) -- (-30:4) -- cycle;
-%\fill[red,path fading=south] (80:4) -- (210:4) -- (-30:4) -- cycle;
 \end{tikzpicture}
 \end{minipage}
 \end{frame}
@@ -103,15 +95,6 @@
 	 Modern SOCs can require multiple specific voltages
 
 	\column{0.72\linewidth}
-%\begin{tikzpicture}[node distance=5cm]
-%	\node (nvcc_snvs) [spsys] {LDO1 NVCC SNVS 1.8V};
-	%\node (soc) [socs, below of=nvcc_snvs] {SOC};
-%	\draw [arrow] (psy) -- node[anchor=south] {+5V} (soc);
-%  \filldraw[fill=green] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
-  %\fill[green] (90:2) -- (210:2) -- (-30:2) -- cycle;
-%  \fill[blue,path fading=west] (80:4) -- (210:4) -- (-30:4) -- cycle;
-%\fill[red,path fading=south] (80:4) -- (210:4) -- (-30:4) -- cycle;
-%\end{tikzpicture}
 
 	\begin{tikzpicture}[node distance=0.6cm]
 		\node (nvcc_snvs) [s_psys] {LDO1 1.8V};
@@ -142,7 +125,6 @@
 		\draw [arrow] (nvcc_3v3) node[anchor=north, xshift=3cm] {\scriptsize NVCC-3V3} -| ([xshift=-0.5cm] imx8);
 
 		\draw [arrow] (vdd_phy_1v2) node[anchor=north, xshift=3cm] {\scriptsize VDD-PHY-1V2} -| ([xshift=0.5cm] imx8);
-		%\draw [arrow] (vdd_phy_1v2) -| node[anchor=north] {\small VDD-PHY-1V2} ([xshift=0.5cm] imx8);
 		\draw [arrow] (ldo5) node[anchor=north, xshift=3cm] {\scriptsize VDD-PHY-1V2} -| ([xshift=1.6cm] imx8);
 	\end{tikzpicture}
 	\end{columns}
@@ -155,7 +137,7 @@
 	\column{0.18\linewidth}
 		And specific timings...
 	\column{0.82\linewidth}\vspace{4pt}
-		\includegraphics[width=1\linewidth]{BD71847_start_up_seq.png}
+		\includegraphics[width=1\linewidth]{img/BD71847_start_up_seq.png}
 	\end{columns}
 \end{frame}
 
@@ -209,7 +191,7 @@ PMIC - Power Management Integrated Circuit
 	\item Auxiliary blocks to support various needs\\ [10pt]
 \end{itemize}
 
-\includegraphics[width=1\linewidth]{pmic_block.png}
+\includegraphics[width=1\linewidth]{img/pmic_block.png}
 \end{frame}
 
 %--------------  MFD page
@@ -219,7 +201,6 @@ PMIC - Power Management Integrated Circuit
 \begin{frame}[t]{Multi Function Devices}
 	\begin{columns}
 	\column[t]{0.3\linewidth}
-%Often MFD drivers which allows re-use
 \begin{block}{Often MFD drivers}
 	\begin{itemize}
 		\item \textbf{Regulator}
@@ -234,7 +215,7 @@ PMIC - Power Management Integrated Circuit
 		\only<1> {\textbf{Why?} (I have 1 reason on mind, may be more)}
 		\only<2>{
 			\textbf{Allows re-use \\[10pt]}
-			\includegraphics[width=1\linewidth]{MFD_re_use.png}
+			\includegraphics[width=1\linewidth]{img/MFD_re_use.png}
 		}
 	\end{columns}
 \end{frame}
@@ -247,7 +228,7 @@ PMIC - Power Management Integrated Circuit
 	\item Consumer is driver who wishes to control the regulator using the regulator framework. Eg, sits “on top of” the regulator framework
 	\item PMIC driver is the provider driver (usually just referred as a regulator driver) \\[10pt]
 \end{itemize}
-\includegraphics[width=1\linewidth]{regulator_users.png}
+\includegraphics[width=1\linewidth]{img/regulator_users.png}
 \end{frame}
 
 %-------------- notification / error flags page
@@ -397,7 +378,7 @@ static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA,
 	\begin{itemize}
 		\item set by provider
 		\item queried (polled) by consumer
-%		\item regulator_get_error_flags()
+		\item regulator$\_$get$\_$error$\_$flags()
 	\end{itemize}
 }
 \onslide<3>{
@@ -421,9 +402,9 @@ static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA,
 #define REGULATOR_ERROR_REGULATION_OUT
 #define REGULATOR_ERROR_FAIL
 #define REGULATOR_ERROR_OVER_TEMP
-#define REGULATOR_ERROR_UNDER_VOLTAGE_WARN         
-#define REGULATOR_ERROR_OVER_CURRENT_WARN        
-#define REGULATOR_ERROR_OVER_VOLTAGE_WARN       
+#define REGULATOR_ERROR_UNDER_VOLTAGE_WARN
+#define REGULATOR_ERROR_OVER_CURRENT_WARN
+#define REGULATOR_ERROR_OVER_VOLTAGE_WARN
 #define REGULATOR_ERROR_OVER_TEMP_WARN
 \end{lstlisting}
 include/linux/regulator/consumer.h
@@ -458,14 +439,13 @@ Usually IRQ backed
 	\item Regulator consumer action is executed
 \end{enumerate}
 \pause
-In some (many) cases IRQ is held active for whole duration of error 
+In some (many) cases IRQ is held active for whole duration of error
 \begin{itemize}
 	\item Maybe because these IRQs are considered as a last thing?
 	\item Maybe because there is need to ensure IRQ is not missed?
 	\item Does not play well with all systems
 \end{itemize}
 \end{frame}
-
 
 %-------------- IRQ helper page
 
@@ -495,38 +475,34 @@ void *regulator_irq_helper(struct device *dev,
 	\column[t]{0.25\linewidth}
 	events
 	\only<2->{
-		\includegraphics[width=1\linewidth]{isr/IRQ.png}
+		\includegraphics[width=1\linewidth]{img/isr/IRQ.png}
 	}
 	\only<4->{
-		\includegraphics[width=1\linewidth]{isr/emergpoff.png}
+		\includegraphics[width=1\linewidth]{img/isr/emergpoff.png}
 	}
 	\only<5->{
-		\includegraphics[width=1\linewidth]{isr/consumers.png}
+		\includegraphics[width=1\linewidth]{img/isr/consumers.png}
 	}
 	\column[t]{0.25\linewidth}
 	helper
-	\includegraphics[width=1\linewidth]{isr/helperbox_size.png}
+	\includegraphics[width=1\linewidth]{img/isr/helperbox_size.png}
 	\column[t]{0.20\linewidth}
 	action \\[8pt]
 	\only<3->{
-		\includegraphics[width=1\linewidth]{isr/map_event.png}
+		\includegraphics[width=1\linewidth]{img/isr/map_event.png}
 	}
 	\only<4->{
-		\includegraphics[width=1\linewidth]{isr/die.png}\vspace{20pt}
+		\includegraphics[width=1\linewidth]{img/isr/die.png}\vspace{20pt}
 	}
 	\only<6->{
-		\includegraphics[width=1\linewidth]{isr/renable.png}
+		\includegraphics[width=1\linewidth]{img/isr/renable.png}
 	}
 	\only<7->{
-		\includegraphics[width=0.5\linewidth]{isr/retry.png}
+		\includegraphics[width=0.5\linewidth]{img/isr/retry.png}
 	}
 	\column[t]{0.30\linewidth}
 	driver \\[4pt]
-	\includegraphics[width=1\linewidth]{isr/driver_size.png}
-%		\only<1> {\textbf{Why?} (I have 1 reason on mind, may be more)}
-%		\only<2>{
-%			\textbf{Allows re-use \\[10pt]}			
-%		}
+	\includegraphics[width=1\linewidth]{img/isr/driver_size.png}
 	\end{columns}
 \end{frame}
 

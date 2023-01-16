@@ -7,6 +7,9 @@
 \usepackage{listings} % for code
 \usetikzlibrary{fadings}
 
+\setbeameroption{show notes}
+\setbeameroption{show notes on second screen=top}
+
 \title{Linux Power!}
 \subtitle{(From the perspective of a PMIC vendor)}
 \author{Matti Vaittinen}
@@ -19,7 +22,10 @@
 
 %-------------- title
 \addtocounter{framenumber}{-1}
+
+
 \begin{frame}[plain]
+\note{Welcome. I am not excited to be here. I am terrified}
 	\titlepage
 \end{frame}
 
@@ -35,6 +41,10 @@ Functional-safety helpers in regulator subsystem
 \end{block} \vspace{8pt}
 
 \tableofcontents
+\note[item]{Shallow overview on what is PMIC and why it is needed}
+\note[item]{Linux oriented Short glance of drivers can be needed for a PMIC}
+\note[item]{functional safety and reporting hw issues}
+
 \end{frame}
 
 %-------------- about me page
@@ -51,6 +61,8 @@ Functional-safety helpers in regulator subsystem
 	\column{0.38\linewidth}
 		\includegraphics[width=1\linewidth]{img/me.png}
 	\end{columns}
+\note[item]{HW vendor, no forest from the trees.}
+\note[item]{ Anyone with insight on how notifiers are or could be used - please explain!}
 \end{frame}
 
 %-------------- Powering a processor page
@@ -85,6 +97,7 @@ Functional-safety helpers in regulator subsystem
 	\draw [arrow] (psy) -- node[anchor=south] {+5V} (soc);
 \end{tikzpicture}
 \end{minipage}
+\note{could be this simple. Just passive source}
 \end{frame}
 
 %-------------- Powering a modern SOC page
@@ -134,6 +147,8 @@ Functional-safety helpers in regulator subsystem
 		\draw [arrow] (ldo5) node[anchor=north, xshift=3cm] {\scriptsize LDO5-OUT} -| ([xshift=1.6cm] imx8);
 	\end{tikzpicture}
 	\end{columns}
+\note[item]{almost a real SOC.}
+\note[item]{pic omits state GPIOs}
 \end{frame}
 
 %-------------- Powering a modern SOC page 2
@@ -145,6 +160,9 @@ Functional-safety helpers in regulator subsystem
 	\column{0.82\linewidth}\vspace{4pt}
 		\includegraphics[width=1\linewidth]{img/BD71847_start_up_seq.png}
 	\end{columns}
+\note[item]{TIMINGs - explain state transitions}
+\note[item]{from PMIC spec}
+\note[item]{shows also internal changes}
 \end{frame}
 
 %-------------- More control page
@@ -156,6 +174,10 @@ Power savings by:
 	\item Stand-by state(s)
 	\item DVS (Dynamic Voltage Scaling)
 \end{itemize}
+\note[item]{Importance of power saving increases}
+\note[item]{Toggling outputs on/off}
+\note[item]{Changing voltages}
+\note[item]{Predefined states changed by GPIO (avoid I2C shut-down races I2C depends on some other block - other can't be shut down?)}
 \end{frame}
 
 %--------------  Automated power-on page
@@ -169,6 +191,8 @@ Powering-on a system at given time...
 \begin{itemize}
 	\item HALL sensor, ...
 \end{itemize}
+\note[item]{Monitor turn-on  input when SOC is shut down}
+\note[item]{For example RTC / HALL sensor (lid) }
 \end{frame}
 
 %--------------  More requirements page
@@ -184,9 +208,16 @@ Powering-on a system at given time...
 		\item Temperature monitoring
 	\end{itemize}
 \end{itemize}
+\note{More needs}
+\note[item]{battery powered devices everywhere => charging logic}
+\note[item]{Watchdog cut power - can be external or in power-supply}
+\note[item]{montor abnormal events (temp, over voltage, ocp)}
 \end{frame}
 
 %--------------  PMICs page
+
+\newcommand\TBox[2][]{%
+  \tikz\node[draw,minimum width=1.8cm,minimum height=1cm,text centered,rounded corners,ultra thick,align=center,#1] {#2};}
 
 \begin{frame}{PMICs}
 PMIC - Power Management Integrated Circuit
@@ -197,7 +228,11 @@ PMIC - Power Management Integrated Circuit
 	\item Auxiliary blocks to support various needs\\ [10pt]
 \end{itemize}
 
-\includegraphics[width=1\linewidth]{img/pmic_block.png}
+\TBox[fill=gray!30]{%
+	\TBox[fill=red!30]{Regulators/Monitoring} PMIC \TBox[fill=cyan!30]{Battery/Charger} \\ 
+	\TBox[fill=green!30]{Watchdog}\TBox[fill=green!30]{RTC}\TBox[fill=green!30]{CLK}\TBox[fill=green!30]{GPIO}} \\
+
+%\includegraphics[width=1\linewidth]{img/pmic_block.png}
 \end{frame}
 
 %============== Section PMIC drivers
@@ -510,10 +545,10 @@ void *regulator_irq_helper(struct device *dev,
 		\includegraphics[width=1\linewidth]{img/isr/consumers.png}
 	}
 	\column[t]{0.25\linewidth}
-	helper
+	helper \\[4pt]
 	\includegraphics[width=1\linewidth]{img/isr/helperbox_size.png}
 	\column[t]{0.20\linewidth}
-	action \\[8pt]
+	action \\[12pt]
 	\only<3->{
 		\includegraphics[width=1\linewidth]{img/isr/map_event.png}
 	}
@@ -722,7 +757,7 @@ ret = devm_regulator_irq_helper(&pdev->dev, &bd9576_notif_ovd,
 
 \begin{frame}{Summary}
 \begin{itemize}
-	\item powering up a modern SOC is not simple
+	\item Powering up a modern SOC is not simple
 	\item PMIC is an IC trying to integrate powering related features into single chip
 	\item Many PMICs include functional-safety features
 	\item There is some existing support for indicating abnormal events

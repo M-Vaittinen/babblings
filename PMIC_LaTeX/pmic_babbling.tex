@@ -684,6 +684,21 @@ void *regulator_irq_helper(struct device *dev,
 %--------------  limit config callbacks page
 
 \begin{frame}[fragile]{Helper configuration}
+\note[item]<1>{Let's get back to helper registration.}
+\note[item]<1>{Helper config information is given in struct regulator$\_$irq$\_$desc}
+\note[item]<1>{fatal$\_$cnt can be used to mark failures to handle event as fatal. Eg. after checking this many  times for whether the condition is resolved (attempts to re-enable), die() is called or emergency power-off is executed}
+\note[item]<2>{reread$\_$ms is time to wait after failed event mapping until retrying}
+\note[item]<2>{irq$\_$off$\_$ms is time to keep IRQ disabled (before calling renable() if provided}
+\note[item]<3>{skip$\_$off and high$\_$prio are sometihng that were used in existing event implementations}
+\note[item]<3>{skip$\_$off can be specified to not handle IRQs for regulators that are disabled}
+\note[item]<3>{high$\_$prio can be set to use high$\_$priority work-queue for trying to re-enable the IRQ}
+\note[item]<4>{data is pointer which can be used to store data needed in call-backs - like the driver private data}
+\note[item]<4>{Callbacks for die(), mapping event and seeing if IRQ can be re-enabled. We will see the callbacks later}
+\note[item]<5>{On top of this on the helper registration we provide}
+\note[item]<5>{device pointer and IRQ information}
+\note[item]<5>{errors that are common to all regulator devices this IRQ can be indicating errors for}
+\note[item]<5>{errors specific to only some of the regulator devices}
+\note[item]<5>{and finally an array of the regulator devices for which this IRQ can indicate problems}
 \lstset{language=C}
 \scriptsize
 

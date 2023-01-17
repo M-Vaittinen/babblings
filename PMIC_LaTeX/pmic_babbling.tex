@@ -25,7 +25,13 @@
 
 
 \begin{frame}[plain]
-\note{Welcome. I am not excited to be here. I am terrified}
+\note[item]{Breath, smile, look at them}
+\note[item]{Eyecontact. They are your friends. On your side}
+\note[item]{Breath}
+\note[item]{Welcome. I am not excited to be here. I am terrified}
+\note[item]{I am afraid of social situations and don't like making myself known}
+\note[item]{So, of course I am climbing up on the stage to give a talk, right? ... How stupid one can be?}
+\note[item]{Well, as I am here, I will talk a little bit about powring a SoC on a Linux based system}
 	\titlepage
 \end{frame}
 
@@ -34,6 +40,10 @@
 \metroset{block=fill}
 
 \begin{frame}[t]{Topics} \vspace{4pt}
+\note[item]{Shallow overview on what is PMIC and why it is needed}
+\note[item]{Linux oriented Short glance of drivers can be needed for a PMIC}
+\note[item]{functional safety and reporting hw issues}
+
 \begin{block}{Goal}
 What is PMIC \\
 Regulator errors and notifications \\
@@ -41,28 +51,27 @@ Functional-safety helpers in regulator subsystem
 \end{block} \vspace{8pt}
 
 \tableofcontents
-\note[item]{Shallow overview on what is PMIC and why it is needed}
-\note[item]{Linux oriented Short glance of drivers can be needed for a PMIC}
-\note[item]{functional safety and reporting hw issues}
-
 \end{frame}
 
 %-------------- about me page
 
 \begin{frame}{About Me}
+\note[item]{This is the formal me}
+\note[item]{Linux developer who started working with Linux at 2005}
+\note[item]{Today I work at ROHM Semiconductors}
+\note[item]{HW vendor, no forest from the trees.}
+\note[item]{ Anyone with insight on how notifiers are or could be used - please explain!}
 	\begin{columns}
 	\column{0.58\linewidth}
 		\begin{itemize}
 			\item Matti Vaittinen
 			\item Kernel/Driver developer at ROHM Semiconductor
-			\item Worked at Nokia BTS projects (networking, clock \& sync) 2005 – 2017
+			\item Worked at Nokia BTS projects (networking, clock \& sync) 2006 – 2018
 			\item Currently mainly developing/maintaining upstream Linux device drivers for ROHM ICs
 		\end{itemize}
 	\column{0.38\linewidth}
 		\includegraphics[width=1\linewidth]{img/me.png}
 	\end{columns}
-\note[item]{HW vendor, no forest from the trees.}
-\note[item]{ Anyone with insight on how notifiers are or could be used - please explain!}
 \end{frame}
 
 %-------------- Powering a processor page
@@ -77,6 +86,7 @@ Functional-safety helpers in regulator subsystem
 \addtocounter{framenumber}{-1}
 \begin{frame}[plain]
 \section{What and Why is a PMIC?}
+\note{Following section aims to give an idea about What a PMIC is and Why PMICs are needed?}
 \end{frame}
 
 \begin{frame}[t]{Powering a processor}\vspace{4pt}
@@ -227,18 +237,25 @@ PMIC - Power Management Integrated Circuit
 	\item Functional-safety
 	\item Auxiliary blocks to support various needs\\ [10pt]
 \end{itemize}
-
+\center
 \TBox[fill=gray!30]{%
-	\TBox[fill=red!30]{Regulators/Monitoring} PMIC \TBox[fill=cyan!30]{Battery/Charger} \\ 
+	\TBox[fill=red!30]{Regulators/Monitoring} PMIC \TBox[fill=cyan!30]{Battery/Charger} \\ [4pt]
 	\TBox[fill=green!30]{Watchdog}\TBox[fill=green!30]{RTC}\TBox[fill=green!30]{CLK}\TBox[fill=green!30]{GPIO}} \\
 
 %\includegraphics[width=1\linewidth]{img/pmic_block.png}
+	\note[item] {PMICs created to support previous use-cases}
+	\note[item] {Often very SOC specific}
+	\note[item] {Still also generic ones done - very customizable (amount of outputs, voltages, sequences)}
 \end{frame}
 
 %============== Section PMIC drivers
 
 \addtocounter{framenumber}{-1}
 \begin{frame}[plain]
+\note[item]{What some typical PMIC drivers look like}
+\note[item]{MFD}
+\note[item]{Regulators}
+
 \section{PMIC drivers}
 \subsection{MFD and subdevices}
 \subsection{Regulators}
@@ -250,6 +267,14 @@ PMIC - Power Management Integrated Circuit
 	\begin{columns}
 	\column[t]{0.3\linewidth}
 \begin{block}{Often MFD drivers}
+	\note[item]<1>{MFD "core" driver (Lee says there is no such "thing" as MFD)}
+	\note[item]<1>{core driver often provides bus access and IRQ controller code}
+	\note[item]<1>{core driver is created as any "standard driver" on that bus}
+	\note[item]<1>{Sub devices are (seemingly independent) platform devices}
+	\note[item]<1>{mfd-cell array describes subdevices (drivers)}
+	\note[item]<1>{mfd registration instantiates subdevices and runs driver probes}
+	\note[item]<1>{MODALIAS for module loading}
+	\note[item]<1>{Ask why MFD? (spoiler, re-use)}
 	\begin{itemize}
 		\item \textbf{Regulator}
 		\item RTC
@@ -266,11 +291,21 @@ PMIC - Power Management Integrated Circuit
 			\includegraphics[width=1\linewidth]{img/MFD_re_use.png}
 		}
 	\end{columns}
+	\note[item]<2>{Many devices re-use digital blocks from previous generations while adding something new}
+	\note[item]<2>{MFD sub-devices can be re-used and new drivers written only for new blocks (ideally)} 
 \end{frame}
 
 %--------------  regulator consumer/provider page
 
 \begin{frame}[t]{Regulator (provider) and consumer}\vspace{4pt}
+
+\note[item]{regulator framework sits between hardware driver and regulator user}
+\note[item]{provides control/information interface to consumer drivers - regulator API}
+\note[item]{hardware driver interfaces PMIC and translates regulator framework requests to register reads/writes}
+\note[item]{example, regulator consumer can be sensor driver, enabling sensor power when sensor is needed}
+\note[item]{sensor requests and enables the regulator via regulator API}
+\note[item]{regulator framework calls correct callbacks from regulator driver}
+
 \begin{itemize}
 	\item Provider is driver interfacing the hardware. Eg, sits “below” the regulator framework. Between regulator framework and HW
 	\item Consumer is driver who wishes to control the regulator using the regulator framework. Eg, sits “on top of” the regulator framework
@@ -283,6 +318,7 @@ PMIC - Power Management Integrated Circuit
 
 \addtocounter{framenumber}{-1}
 \begin{frame}[plain]
+\note[item]{rest of the show explains how regulator framework can be used to deliver errors. From PMIC vendor perspective - sorry}
 \section{Monitoring for abnormal conditions}
 \subsection{Severity levels and limit values}
 \subsection{Regulator errors and notifications}
@@ -304,24 +340,37 @@ PMIC - Power Management Integrated Circuit
 		\item Unconditional \textcolor{magenta}{shutdown by HW}
 	\end{itemize}
 }
+	\note[item]<2>{PROTECTION example, severe overvoltage - PMIC shuts down all or offending outputs}
+	\note[item]<2>{Could be also temperature-error or over-current}
+
 	\item \textbf{ERROR}
 \onslide<3>{
 	\begin{itemize}
 		\item \textcolor{red}{Irrecoverable error,} system not expected to be usable. Error handling by software.
 	\end{itemize}
 }
+	\note[item]<3>{Some PMICs may not automatically shut down outputs - SW should do it}
+	\note[item]<3>{ERROR still indicate fatal issues - HW not working}
 	\item  \textbf{WARNING} - NEW(ish)
 \onslide<4>{
 	\begin{itemize}
 		\item \textcolor{orange}{Something is off-limit,} system still usable but a recovery action should be taken to prevent escalation to errors
 	\end{itemize}
 }
+		\note[item]<4>{WARNING included in kernel 5.14}
+		\note[item]<4>{Intended to be used for invoking corrective action(s)}
+		\note[item]<4>{Has been requested from us - there probably are use-cases}
+		\note[item]<4>{I have no insight as to what they could be - very interested in learning any concrete examples - ask from audience}
 \end{itemize}
 \end{frame}
 
 %--------------  setting safety limits via device-tree page
 
 \begin{frame}[t]{Safety limits, devicetree}\vspace{4pt}
+
+\note[item]<1>{Often board specific - Can be provided via device-tree}
+\note[item]<1>{property format from box}
+
 \onslide<1-2>{
 \begin{block}{Property format:}
 \begin{itemize}
@@ -348,14 +397,33 @@ Values:
 \end{itemize}
 }
 
+\note[item]<2>{value sets new limit}
+\note[item]<2>{1 / 0 special values - they are used to indicate enable / disable}
+
+
 \only<3->{
 \textcolor{red}{\textbf{What if hardware does not support given limit?}}
 }
+
+\note[item]<3>{I have no good answer.}
+\note[item]<3>{What happens if silently ignored?}
+\note[item]<3>{What happens if regulator registration fails?}
+\note[item]<3>{If limit is silently ignored - problems for example when changing a component and new driver does not support limits}
+\note[item]<3>{If registration fails, system may not boot, boot without display etc.}
+\note[item]<3>{Currently just log a warning}
+\note[item]<3>{In general, is there a way to mark NOT supported properties to binding docs? Would it help? Including ALL regulator bindings does hide this at avalidation}
+\note[item]{pause}
+\note[item]<3>{I know you are eager to see the code :) So, let's look at some}
 \end{frame}
 
 %--------------  limit config callbacks page
 
 \begin{frame}[fragile]{Callbacks for configuring the limits}
+\note[item]<1>{Callbacks for over-current, over- and under-voltage, over temperature}
+\note[item]<1>{Arguments include the limit, severity (PROT, ERR, WARN) and enable/disable}
+\note[item]<2>{Callbacks are amongst the other regulator ops which is pointed from the regulator description}
+\note[item]<3>{The description with ops is passed to regulator registration}
+
 \lstset{language=C}
 \scriptsize
 
@@ -394,6 +462,13 @@ struct regulator_dev *devm_regulator_register(struct device *dev,
 
 
 \begin{frame}[fragile]{Simplified example}
+\note[item]{Example of over-current protection example using pieces of ROHM BD9576 driver as example}
+\note[item]{Regulator framework parses dt properties and invokes callback with values found from DT}
+\note[item]{Driver typically checks for parameter sanity/support}
+\note[item]{Driver decides the register and values to write based on severity and limit}
+\note[item]{for example BD9576 has different register and limit ranges for warning and protection}
+\note[item]{From the PMIC operation POV there is no difference between ERROR and WARNING}
+\note[item]{Finally if limits were sane, the driver updates new limits to registers and returns Ok}
 \lstset{language=C}
 \scriptsize
 \begin{lstlisting}[commentstyle=\color{orange}]
@@ -426,6 +501,16 @@ static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA,
 %--------------  informing the unexpected page
 
 \begin{frame}[t]{Informing the unexpected}\vspace{4pt}
+\note[item]<1>{So, when an abnormal event is detected by HW (something exeeds the limit) we need to inform consumers}
+\note[item]<1>{The regulator framework can use ERRORs or NOTIFICATIONs}
+\note[item]<1>{Errors visible via sysfs}
+\note[item]<2>{Errors are simple status which is stored in framework}
+\note[item]<2>{Errors need to be polled by consumers}
+\note[item]<2>{Polling is not always preferred}
+\note[item]<3>{Notifications are sent by HW when problem occurs}
+\note[item]<3>{No polling needed - except to know when condition is back to normal}
+\note[item]<3>{Not all notifications are errors...}
+
 \begin{block}{Two types of information}
 \begin{itemize}
 	\item ERRORs
@@ -457,6 +542,9 @@ static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA,
 %--------------  list of errors page
 
 \begin{frame}[fragile]{Regulator error flags}
+\note[item]{The available ERROR definitions}
+\note[item]{I've used REGULATION-OUT for over-voltage}
+\note[item]{Not sure where REGULATOR-ERROR-FAIL is used}
 \begin{lstlisting}
 #define REGULATOR_ERROR_UNDER_VOLTAGE
 #define REGULATOR_ERROR_OVER_CURRENT

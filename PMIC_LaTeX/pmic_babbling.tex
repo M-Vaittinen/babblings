@@ -26,12 +26,12 @@
 
 \begin{frame}[plain]
 \note[item]{Breath, smile, look at them}
-\note[item]{Eyecontact. They are your friends. On your side}
+\note[item]{Eye contact. They are your friends. On your side}
 \note[item]{Breath}
 \note[item]{Welcome. I am not excited to be here. I am terrified}
 \note[item]{I am afraid of social situations and don't like making myself known}
 \note[item]{So, of course I am climbing up on the stage to give a talk, right? ... How stupid one can be?}
-\note[item]{Well, as I am here, I will talk a little bit about powring a SoC on a Linux based system}
+\note[item]{Well, as I am here, I will talk a little bit about powering a SoC on a Linux based system}
 	\titlepage
 \end{frame}
 
@@ -158,7 +158,7 @@ Functional-safety helpers in regulator subsystem
 	\end{tikzpicture}
 	\end{columns}
 \note[item]{almost a real SOC.}
-\note[item]{pic omits state GPIOs}
+\note[item]{picture omits state GPIOs}
 \end{frame}
 
 %-------------- Powering a modern SOC page 2
@@ -221,7 +221,7 @@ Powering-on a system at given time...
 \note{More needs}
 \note[item]{battery powered devices everywhere => charging logic}
 \note[item]{Watchdog cut power - can be external or in power-supply}
-\note[item]{montor abnormal events (temp, over voltage, ocp)}
+\note[item]{monitor abnormal events (temp, over voltage, ocp)}
 \end{frame}
 
 %--------------  PMICs page
@@ -257,7 +257,7 @@ PMIC - Power Management Integrated Circuit
 \note[item]{Regulators}
 
 \section{PMIC drivers}
-\subsection{MFD and subdevices}
+\subsection{MFD and sub-devices}
 \subsection{Regulators}
 \end{frame}
 
@@ -271,8 +271,8 @@ PMIC - Power Management Integrated Circuit
 	\note[item]<1>{core driver often provides bus access and IRQ controller code}
 	\note[item]<1>{core driver is created as any "standard driver" on that bus}
 	\note[item]<1>{Sub devices are (seemingly independent) platform devices}
-	\note[item]<1>{mfd-cell array describes subdevices (drivers)}
-	\note[item]<1>{mfd registration instantiates subdevices and runs driver probes}
+	\note[item]<1>{mfd-cell array describes sub-devices (drivers)}
+	\note[item]<1>{mfd registration instantiates sub-devices and runs driver probes}
 	\note[item]<1>{MODALIAS for module loading}
 	\note[item]<1>{Ask why MFD? (spoiler, re-use)}
 	\begin{itemize}
@@ -328,7 +328,7 @@ PMIC - Power Management Integrated Circuit
 
 %-------------- notification / error flags page
 
-\begin{frame}[t]{Detecting undexpected}\vspace{4pt}
+\begin{frame}[t]{Detecting unexpected}\vspace{4pt}
 \begin{block}{Linux has 3 severity categories}
 
 \end{block}
@@ -340,7 +340,7 @@ PMIC - Power Management Integrated Circuit
 		\item Unconditional \textcolor{magenta}{shutdown by HW}
 	\end{itemize}
 }
-	\note[item]<2>{PROTECTION example, severe overvoltage - PMIC shuts down all or offending outputs}
+	\note[item]<2>{PROTECTION example, severe over-voltage - PMIC shuts down all or offending outputs}
 	\note[item]<2>{Could be also temperature-error or over-current}
 
 	\item \textbf{ERROR}
@@ -366,7 +366,7 @@ PMIC - Power Management Integrated Circuit
 
 %--------------  setting safety limits via device-tree page
 
-\begin{frame}[t]{Safety limits, devicetree}\vspace{4pt}
+\begin{frame}[t]{Safety limits, device-tree}\vspace{4pt}
 
 \note[item]<1>{Often board specific - Can be provided via device-tree}
 \note[item]<1>{property format from box}
@@ -411,7 +411,7 @@ Values:
 \note[item]<3>{If limit is silently ignored - problems for example when changing a component and new driver does not support limits}
 \note[item]<3>{If registration fails, system may not boot, boot without display etc.}
 \note[item]<3>{Currently just log a warning}
-\note[item]<3>{In general, is there a way to mark NOT supported properties to binding docs? Would it help? Including ALL regulator bindings does hide this at avalidation}
+\note[item]<3>{In general, is there a way to mark NOT supported properties to binding docs? Would it help? Including ALL regulator bindings does hide this at a validation stage}
 \note[item]{pause}
 \note[item]<3>{I know you are eager to see the code :) So, let's look at some}
 \end{frame}
@@ -421,7 +421,7 @@ Values:
 \begin{frame}[fragile]{Callbacks for configuring the limits}
 \note[item]<1>{Callbacks for over-current, over- and under-voltage, over temperature}
 \note[item]<1>{Arguments include the limit, severity (PROT, ERR, WARN) and enable/disable}
-\note[item]<2>{Callbacks are amongst the other regulator ops which is pointed from the regulator description}
+\note[item]<2>{Callbacks are among the other regulator ops which is pointed from the regulator description}
 \note[item]<3>{The description with ops is passed to regulator registration}
 
 \lstset{language=C}
@@ -641,7 +641,7 @@ void *regulator_irq_helper(struct device *dev,
 \note[item]<4>{map$\_$event() returns information about fatal access failure}
 \note[item]<4>{If error was fatal, helper will call die() callback from driver or try execute emergency power-off}
 \note[item]<4>{The die() callback can be used to provide emergency operation like turning off the failing power}
-\note[item]<5>{Helper will send the notifications to consumers and update the errpr flags}
+\note[item]<5>{Helper will send the notifications to consumers and update the error flags}
 \note[item]<5>{Helper will schedule the IRQ re-enable}
 \note[item]<6>{When it is time to re-enable the IRQ, helper will ask driver if problem is over and IRQ can be re-enabled}
 \note[item]<7>{If IRQ can be re-enabled, the helper unmasks it. If not, the re-enable is scheduled again}
@@ -689,7 +689,7 @@ void *regulator_irq_helper(struct device *dev,
 \note[item]<1>{fatal$\_$cnt can be used to mark failures to handle event as fatal. Eg. after checking this many  times for whether the condition is resolved (attempts to re-enable), die() is called or emergency power-off is executed}
 \note[item]<2>{reread$\_$ms is time to wait after failed event mapping until retrying}
 \note[item]<2>{irq$\_$off$\_$ms is time to keep IRQ disabled (before calling renable() if provided}
-\note[item]<3>{skip$\_$off and high$\_$prio are sometihng that were used in existing event implementations}
+\note[item]<3>{skip$\_$off and high$\_$prio are something that were used in existing event implementations}
 \note[item]<3>{skip$\_$off can be specified to not handle IRQs for regulators that are disabled}
 \note[item]<3>{high$\_$prio can be set to use high$\_$priority work-queue for trying to re-enable the IRQ}
 \note[item]<4>{data is pointer which can be used to store data needed in call-backs - like the driver private data}
@@ -816,7 +816,7 @@ int regulator_irq_map_event_simple(int irq,
 \note[item]<2>{dev$\_$mask is initialized. dev$\_$mask is a bit mask indicating which of the regulators in the status array are flagging problems}
 \note[item]<2>{If no regulators were indicating problems, then we just return Ok}
 \note[item]<3>{Else, we will be setting the bits for failing regulators. The BD9576 status register directly has this information in correct format (bit 0 maps to first regulator, bit 1 in second and so on)}
-\note[item]<3>{finally, the notification and error flags are updated. The BD9576 uses same IRQ mechanism for WARNING and ERROR level notifications allowing the board designer to decide whether OVD should be treated as an ERROR or WARNING severity issue. The flags to advertice are then selected at probe time}
+\note[item]<3>{finally, the notification and error flags are updated. The BD9576 uses same IRQ mechanism for WARNING and ERROR level notifications allowing the board designer to decide whether OVD should be treated as an ERROR or WARNING severity issue. The flags to advertise are then selected at probe time}
 \lstset{language=C}
 \scriptsize
 

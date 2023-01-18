@@ -744,17 +744,25 @@ void *regulator_irq_helper(struct device *dev,
 
 \note[item]<1>{in order to find the reason for the IRQ, the helper is invoking a driver callback map$\_$event()}
 \note[item]<1>{The driver should fill in what regulators were sending notification and what events/errors were detected}
+
 \note[item]<2>{struct regulator$\_$irq$\_$data is used for this}
 \note[item]<2>{contains array of regulator states for all regulators which can be informing events via this IRQ}
 \note[item]<2>{number of the regulators}
 \note[item]<2>{data pointer as was passed at helper registration}
 \note[item]<2>{opaque integer. Mainly for delivering information about detected events to renable. Usually status register value which can be compared to see if situation has changed}
+
 \note[item]<3>{The status for each regulator is filled in regulator$\_$err$\_$state struct}
 \note[item]<3>{pointer to regulator device which state this struct is informing}
 \note[item]<3>{notifs is the regulator notification flags}
 \note[item]<3>{errors is the regulator error flags}
 \note[item]<3>{possible$\_$errs should contain the errors this IRQ can be informing. Used to clear error statuses when re-enabling the IRQ}
 
+\note[item]<4>{driver can provide a renable() call-back, which should be checking if reported problem has gone and IRQ can be re-enabled}
+\note[item]<4>{gets a pointer to the same struct regulator$\_$irq$\_$data as map$\_$event() did}
+\note[item]<4>{simplest for just checks current status register value and compares to the opaque value}
+\note[item]<4>{it is possible there is some new errors - or some old have gone while some have stayed. In this case the renable may prefer indicating that IRQ should be enabled. This will probably yield a new IRQ and updated set of notifications to be sent}
+
+\note[item]<5>{finally, for simple HW where an IRQ can only signal one type of errors, on one regulator, driver can use generic helper called regulator$\_$irq$\_$map$\_$event$\_$simple()}
 \lstset{language=C}
 \scriptsize
 
@@ -797,6 +805,18 @@ int regulator_irq_map_event_simple(int irq,
 %--------------  Event mapping example
 
 \begin{frame}[fragile]{Event mapping example}
+
+\note[item]<1>{example of ROHM BD9576 over-voltage IRQ's event mapping function}
+\note[item]<1>{This IRQ can be reporting over-voltage for voltage outputs 1 to 4}
+\note[item]<1>{first the event mapping function reads the status from the hardware}
+\note[item]<1>{if read fails, we return the REGULATOR$\_$FAILED$\_$RETRY}
+\note[item]<1>{at the moment in BD9576 case the failures are not marked fatal though - eg, no number of failures will cause emergency power-off}
+
+\note[item]<2>{The status is stored to the opaque data so that we can easily see if stauses have changed at renable()}
+\note[item]<2>{dev$\_$mask is initialized. dev$\_$mask is a bit mask indicating which of the regulators in the status array are flagging problems}
+\note[item]<2>{If no regulators were indicating problems, then we just return Ok}
+\note[item]<3>{Else, we will be setting the bits for failing regulators. The BD9576 status register directly has this information in correct format (bit 0 maps to first regulator, bit 1 in second and so on)}
+\note[item]<3>{finally, the notification and error flags are updated. The BD9576 uses same IRQ mechanism for WARNING and ERROR level notifications allowing the board designer to decide whether OVD should be treated as an ERROR or WARNING severity issue. The flags to advertice are then selected at probe time}
 \lstset{language=C}
 \scriptsize
 
@@ -839,10 +859,18 @@ static int bd9576_ovd_handler(int irq, struct regulator_irq_data *rid,
 %--------------  Helper regisration example
 
 \begin{frame}[fragile]{Helper registration 1/2}
+
+\note<1>{Helper registration. Let's look at relevant bits of BD9576 PMIC driver to see an exaple of helper registration for over-voltage}
+\note[item]<1>{ Just read the intention and reveal the code block +  pause so people can understand the code}
+\note[item]<2>{name - obvious}
+\note[item]<2>{we keep IRQs disabled for a second}
+\note[item]<2>{We don't make this fatal or give a die() callback}
+\note[item]<2>{populate map$\_$event and renable}
 \lstset{language=C}
-\scriptsize
 
 Fill the helper configuration
+\scriptsize
+
 \pause
 \begin{lstlisting}
 static const struct regulator_irq_desc bd9576_notif_ovd = {              
@@ -856,13 +884,17 @@ static const struct regulator_irq_desc bd9576_notif_ovd = {
 \end{frame}
 
 \begin{frame}[fragile]{Helper registration 2/2}
+
+\note[item]<2>{in a loop where we register regulators, we add regulators which can inform OVD to the ovd$\_$devs array}
+
 \lstset{language=C}
-\scriptsize
 
 Create an array of regulators this IRQ may concern
+\scriptsize
+
 \pause
 \begin{lstlisting}
-struct regulator_dev *rdevs[BD9576_NUM_REGULATORS];
+struct regulator_dev *ovd_devs[BD9576_NUM_OVD_REGULATORS];
 
 for (i = 0; i < num_rdev; i++) {
 	struct bd957x_regulator_data *r = &ic_data->regulator_data[i];
@@ -876,7 +908,10 @@ for (i = 0; i < num_rdev; i++) {
 }
 \end{lstlisting}
 \pause
+\normalsize
 Fill possible errors this IRQ may indicate and register the helper
+\scriptsize
+
 \pause
 \begin{lstlisting}
 int ovd_errs = REGULATOR_ERROR_OVER_VOLTAGE_WARN |

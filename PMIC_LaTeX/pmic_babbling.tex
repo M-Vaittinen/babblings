@@ -741,6 +741,20 @@ void *regulator_irq_helper(struct device *dev,
 %--------------  Event mapping page
 
 \begin{frame}[fragile]{Event mapping}
+
+\note[item]<1>{in order to find the reason for the IRQ, the helper is invoking a driver callback map$\_$event()}
+\note[item]<1>{The driver should fill in what regulators were sending notification and what events/errors were detected}
+\note[item]<2>{struct regulator$\_$irq$\_$data is used for this}
+\note[item]<2>{contains array of regulator states for all regulators which can be informing events via this IRQ}
+\note[item]<2>{number of the regulators}
+\note[item]<2>{data pointer as was passed at helper registration}
+\note[item]<2>{opaque integer. Mainly for delivering information about detected events to renable. Usually status register value which can be compared to see if situation has changed}
+\note[item]<3>{The status for each regulator is filled in regulator$\_$err$\_$state struct}
+\note[item]<3>{pointer to regulator device which state this struct is informing}
+\note[item]<3>{notifs is the regulator notification flags}
+\note[item]<3>{errors is the regulator error flags}
+\note[item]<3>{possible$\_$errs should contain the errors this IRQ can be informing. Used to clear error statuses when re-enabling the IRQ}
+
 \lstset{language=C}
 \scriptsize
 

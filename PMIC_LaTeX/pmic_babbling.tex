@@ -28,10 +28,12 @@
 \note[item]{Breath, smile, look at them}
 \note[item]{Eye contact. They are your friends. On your side}
 \note[item]{Breath}
-\note[item]{Welcome. I am not excited to be here. I am terrified}
-\note[item]{I am afraid of social situations and don't like making myself known}
-\note[item]{So, of course I am climbing up on the stage to give a talk, right? ... How stupid one can be?}
-\note[item]{Well, as I am here, I will talk a little bit about powering a SoC on a Linux based system}
+\note[item]{Welcome.}
+\note[item]{Not excited. Terrified}
+\note[item]{audience has expertise - feel free to help me out}
+%\note[item]{I am afraid of social situations and don't like making myself known}
+%\note[item]{So, of course I am climbing up on the stage to give a talk, right? ... How stupid one can be?}
+%\note[item]{Well, as I am here, I will talk a little bit about powering a SoC on a Linux based system}
 	\titlepage
 \end{frame}
 
@@ -40,9 +42,14 @@
 \metroset{block=fill}
 
 \begin{frame}[t]{Topics} \vspace{4pt}
-\note[item]{Shallow overview on what is PMIC and why it is needed}
-\note[item]{Linux oriented Short glance of drivers can be needed for a PMIC}
-\note[item]{functional safety and reporting hw issues}
+%\note[item]{Shallow overview on what is PMIC and why it is needed}
+%\note[item]{Linux oriented Short glance of drivers can be needed for a PMIC}
+%\note[item]{functional safety and reporting hw issues}
+
+\note[item]{What why PMIC}
+\note[item]{PMIC drivers}
+\note[item]{functional safety}
+\note[item]{walk through goal}
 
 \begin{block}{Goal}
 What is PMIC \\
@@ -56,11 +63,13 @@ Functional-safety helpers in regulator subsystem
 %-------------- about me page
 
 \begin{frame}{About Me}
-\note[item]{This is the formal me}
-\note[item]{Linux developer who started working with Linux at 2005}
-\note[item]{Today I work at ROHM Semiconductors}
+%\note[item]{This is the formal me}
+\note[item]{Formal me}
+\note[item]{Linux developer}
+\note[item ]{started working}
+\note[item]{ROHM Semiconductor}
 \note[item]{HW vendor, no forest from the trees.}
-\note[item]{ Anyone with insight on how notifiers are or could be used - please explain!}
+\note[item]{Anyone with insight on how notifiers are or could be used - please explain!}
 	\begin{columns}
 	\column{0.58\linewidth}
 		\begin{itemize}
@@ -86,10 +95,13 @@ Functional-safety helpers in regulator subsystem
 \addtocounter{framenumber}{-1}
 \begin{frame}[plain]
 \section{What and Why is a PMIC?}
-\note{Following section aims to give an idea about What a PMIC is and Why PMICs are needed?}
+%\note{Following section aims to give an idea about What a PMIC is and Why PMICs are needed?}
 \end{frame}
 
 \begin{frame}[t]{Powering a processor}\vspace{4pt}
+
+%\note{could be this simple. Just passive source}
+\note{could be}
 \begin{itemize}
 	\item Processor and peripherals need power
 	\item Can be as simple as a dummy DC power source with correct voltage
@@ -107,7 +119,6 @@ Functional-safety helpers in regulator subsystem
 	\draw [arrow] (psy) -- node[anchor=south] {+5V} (soc);
 \end{tikzpicture}
 \end{minipage}
-\note{could be this simple. Just passive source}
 \end{frame}
 
 %-------------- Powering a modern SOC page
@@ -118,6 +129,11 @@ Functional-safety helpers in regulator subsystem
 \tikzstyle{s_socs} = [rectangle, rounded corners, minimum width=2.5cm, minimum height=3cm,text centered, text width=2.5cm, draw=black, fill=green!30]
 
 \begin{frame}{Powering a modern SOC 1/2}
+
+\note[item]{almost a real SOC.}
+\note[item]{picture omits state GPIOs}
+\note[item]{RTC clk}
+
 	\begin{columns}[onlytextwidth]
 	\column{0.25\linewidth}
 
@@ -157,57 +173,55 @@ Functional-safety helpers in regulator subsystem
 		\draw [arrow] (ldo5) node[anchor=north, xshift=3cm] {\scriptsize LDO5-OUT} -| ([xshift=1.6cm] imx8);
 	\end{tikzpicture}
 	\end{columns}
-\note[item]{almost a real SOC.}
-\note[item]{picture omits state GPIOs}
 \end{frame}
 
 %-------------- Powering a modern SOC page 2
 
 \begin{frame}{Powering a modern SOC 2/2}
+\note[item]{TIMINGs - explain state transitions}
+\note[item]{from PMIC spec}
+\note[item]{shows also internal changes}
+\note[item]{PCB area w/ discrete components}
+\note[item]{New design for each  board(?)}
 	\begin{columns}[onlytextwidth]
 	\column{0.18\linewidth}
 		And specific timings...
 	\column{0.82\linewidth}\vspace{4pt}
 		\includegraphics[width=1\linewidth]{img/BD71847_start_up_seq.png}
 	\end{columns}
-\note[item]{TIMINGs - explain state transitions}
-\note[item]{from PMIC spec}
-\note[item]{shows also internal changes}
 \end{frame}
 
 %-------------- More control page
 
 \begin{frame}{More control...}
+
+\note[item]<1>{Importance of power saving increases}
+\note[item]<1>{example: unused video-accelerator off}
+\note[item]<1>{temperature}
+%\note[item]{Changing voltages}
+\note[item]<1>{Predefined states changed by GPIO (avoid I2C shut-down races I2C depends on some other block - other can't be shut down?)}
+
 Power savings by:
 \begin{itemize}
 	\item Shutting down not needed devices
 	\item Stand-by state(s)
 	\item DVS (Dynamic Voltage Scaling)
 \end{itemize}
-\note[item]{Importance of power saving increases}
-\note[item]{Toggling outputs on/off}
-\note[item]{Changing voltages}
-\note[item]{Predefined states changed by GPIO (avoid I2C shut-down races I2C depends on some other block - other can't be shut down?)}
-\end{frame}
+\pause
 
-%--------------  Automated power-on page
-
-\begin{frame}{Automated power on}
-Powering-on a system at given time...
+Powering-on a system at given time / by an event.
+\note[item]<2>{Monitor turn-on  input when SOC is shut down}
+\note[item]<2>{For example RTC / HALL sensor (lid) }
 \begin{itemize}
 	\item RTC
-\end{itemize}
-...Or by an event
-\begin{itemize}
+%\end{itemize}
+%...Or by an event
+%\begin{itemize}
 	\item HALL sensor, ...
 \end{itemize}
-\note[item]{Monitor turn-on  input when SOC is shut down}
-\note[item]{For example RTC / HALL sensor (lid) }
-\end{frame}
+\pause
 
-%--------------  More requirements page
-
-\begin{frame}{More requirements...}
+More functionality
 \begin{itemize}
 	\item Battery / charger
 	\item Watchdog
@@ -218,11 +232,46 @@ Powering-on a system at given time...
 		\item Temperature monitoring
 	\end{itemize}
 \end{itemize}
-\note{More needs}
-\note[item]{battery powered devices everywhere => charging logic}
-\note[item]{Watchdog cut power - can be external or in power-supply}
-\note[item]{monitor abnormal events (temp, over voltage, ocp)}
+%\note{More needs}
+\note[item]<3>{battery powered devices everywhere}
+\note[item]<3>{Watchdog almost every device has it}
+\note[item]<3>{I have a feeling the importance of func safety increasing}
+
 \end{frame}
+
+%--------------  Automated power-on page
+
+%\begin{frame}{Automated power on}
+%Powering-on a system at given time...
+%\note[item]{Monitor turn-on  input when SOC is shut down}
+%\note[item]{For example RTC / HALL sensor (lid) }
+%\begin{itemize}
+%	\item RTC
+%\end{itemize}
+%...Or by an event
+%\begin{itemize}
+%	\item HALL sensor, ...
+%\end{itemize}
+%\end{frame}
+
+%--------------  More requirements page
+
+%\begin{frame}{More requirements...}
+%\begin{itemize}
+%	\item Battery / charger
+%	\item Watchdog
+%	\item Functional-safety
+%	\begin{itemize}
+%		\item Voltage monitoring
+%		\item Current monitoring
+%		\item Temperature monitoring
+%	\end{itemize}
+%\end{itemize}
+%\note{More needs}
+%\note[item]{battery powered devices everywhere}
+%\note[item]{Watchdog almost every device has it}
+%\note[item]{I have a feeling the importance of func safety increasing}
+%\end{frame}
 
 %--------------  PMICs page
 
@@ -230,6 +279,11 @@ Powering-on a system at given time...
   \tikz\node[draw,minimum width=1.8cm,minimum height=1cm,text centered,rounded corners,ultra thick,align=center,#1] {#2};}
 
 \begin{frame}{PMICs}
+
+\note[item] {PMICs created to support previous use-cases}
+\note[item] {Often SOC specific}
+\note[item] {also generic ones - very customizable (amount of outputs, voltages, sequences, state change controls (I2C, GPIO))}
+
 PMIC - Power Management Integrated Circuit
 \begin{itemize}
 	\item Multiple DC sources with specific start-up / shut-down sequence
@@ -243,9 +297,6 @@ PMIC - Power Management Integrated Circuit
 	\TBox[fill=green!30]{Watchdog}\TBox[fill=green!30]{RTC}\TBox[fill=green!30]{CLK}\TBox[fill=green!30]{GPIO}} \\
 
 %\includegraphics[width=1\linewidth]{img/pmic_block.png}
-	\note[item] {PMICs created to support previous use-cases}
-	\note[item] {Often very SOC specific}
-	\note[item] {Still also generic ones done - very customizable (amount of outputs, voltages, sequences)}
 \end{frame}
 
 %============== Section PMIC drivers
@@ -267,14 +318,28 @@ PMIC - Power Management Integrated Circuit
 	\begin{columns}
 	\column[t]{0.3\linewidth}
 \begin{block}{Often MFD drivers}
-	\note[item]<1>{MFD "core" driver (Lee says there is no such "thing" as MFD)}
-	\note[item]<1>{core driver often provides bus access and IRQ controller code}
-	\note[item]<1>{core driver is created as any "standard driver" on that bus}
-	\note[item]<1>{Sub devices are (seemingly independent) platform devices}
+%	\note[item]<1>{MFD "core" driver (Lee says there is no such "thing" as MFD)}
+%	\note[item]<1>{core driver often provides bus access and IRQ controller code}
+%	\note[item]<1>{core driver is created as any "standard driver" on that bus}
+%	\note[item]<1>{Sub devices are (seemingly independent) platform devices}
+%	\note[item]<1>{mfd-cell array describes sub-devices (drivers)}
+%	\note[item]<1>{mfd registration instantiates sub-devices and runs driver probes}
+%	\note[item]<1>{MODALIAS for module loading}
+%	\note[item]<1>{Ask why MFD? (spoiler, re-use)}
+
+	\note[item]<1>{"core" driver (Lee says there is no such "thing" as MFD)}
+	\note[item]<1>{bus access and IRQ controller code}
+	\note[item]<1>{core driver "standard driver" on that bus}
+	\note[item]<1>{Sub devices independent platform devices}
 	\note[item]<1>{mfd-cell array describes sub-devices (drivers)}
 	\note[item]<1>{mfd registration instantiates sub-devices and runs driver probes}
 	\note[item]<1>{MODALIAS for module loading}
 	\note[item]<1>{Ask why MFD? (spoiler, re-use)}
+
+%	\note[item]<2>{Many devices re-use digital blocks from previous generations while adding something new}
+%	\note[item]<2>{MFD sub-devices can be re-used and new drivers written only for new blocks (ideally)} 
+	\note[item]<2>{HW re-use digital blocks from previous generations}
+	\note[item]<2>{MFD sub-devices can be re-used and new drivers written only for new blocks (ideally)} 
 	\begin{itemize}
 		\item \textbf{Regulator}
 		\item RTC
@@ -285,26 +350,29 @@ PMIC - Power Management Integrated Circuit
 	\end{itemize}
 \end{block}
 	\column[t]{0.68\linewidth}
-		\only<1> {\textbf{Why?} (I have 1 reason on mind, may be more)}
+		%\only<1> {\textbf{Why?} (I have 1 reason on mind, may be more)}
+		\only<1>{
+			\textbf{Why?} (I have 1 reason on mind, may be more)
+			%\textbf{Allows re-use \\[10pt]}
+			\includegraphics[width=1\linewidth]{img/MFD_re_use1.png}
+		}
 		\only<2>{
 			\textbf{Allows re-use \\[10pt]}
 			\includegraphics[width=1\linewidth]{img/MFD_re_use.png}
 		}
 	\end{columns}
-	\note[item]<2>{Many devices re-use digital blocks from previous generations while adding something new}
-	\note[item]<2>{MFD sub-devices can be re-used and new drivers written only for new blocks (ideally)} 
 \end{frame}
 
 %--------------  regulator consumer/provider page
 
 \begin{frame}[t]{Regulator (provider) and consumer}\vspace{4pt}
 
-\note[item]{regulator framework sits between hardware driver and regulator user}
-\note[item]{provides control/information interface to consumer drivers - regulator API}
-\note[item]{hardware driver interfaces PMIC and translates regulator framework requests to register reads/writes}
-\note[item]{example, regulator consumer can be sensor driver, enabling sensor power when sensor is needed}
-\note[item]{sensor requests and enables the regulator via regulator API}
-\note[item]{regulator framework calls correct callbacks from regulator driver}
+\note[item]{framework between hardware driver - user}
+\note[item]{regulator API to consumers}
+\note[item]{framework -> driver -> PMIC regs}
+\note[item]{example, sensor driver}
+\note[item]{request enable via regulator API}
+\note[item]{regulator framework calls callbacks from regulator driver}
 
 \begin{itemize}
 	\item Provider is driver interfacing the hardware. Eg, sits “below” the regulator framework. Between regulator framework and HW
@@ -318,7 +386,9 @@ PMIC - Power Management Integrated Circuit
 
 \addtocounter{framenumber}{-1}
 \begin{frame}[plain]
-\note[item]{rest of the show explains how regulator framework can be used to deliver errors. From PMIC vendor perspective - sorry}
+%\note[item]{rest of the show explains how regulator framework can be used to deliver errors. From PMIC vendor perspective - sorry}
+\note[item]{how regulator framework can be used to deliver errors}
+\note[item]{ From PMIC vendor perspective - sorry}
 \section{Monitoring for abnormal conditions}
 \subsection{Severity levels and limit values}
 \subsection{Regulator errors and notifications}
@@ -329,6 +399,28 @@ PMIC - Power Management Integrated Circuit
 %-------------- notification / error flags page
 
 \begin{frame}[t]{Detecting unexpected}\vspace{4pt}
+
+%	\note[item]<2>{PROTECTION example, severe over-voltage - PMIC shuts down all or offending outputs}
+%	\note[item]<2>{Could be also temperature-error or over-current}
+\note[item]<2>{severe over-voltage}
+\note[item]<2>{temperature-error, over-current}
+
+%\note[item]<3>{Some PMICs may not automatically shut down outputs - SW should do it}
+%\note[item]<3>{ERROR still indicate fatal issues - HW not working}
+
+\note[item]<3>{Some PMICs do not automatically shut down outputs - SW should do it}
+\note[item]<3>{still fatal issues - HW not working}
+
+%\note[item]<4>{WARNING included in kernel 5.14}
+%\note[item]<4>{Intended to be used for invoking corrective action(s)}
+%\note[item]<4>{Has been requested from us - there probably are use-cases}
+%\note[item]<4>{I have no insight as to what they could be - very interested in learning any concrete examples - ask from audience}
+
+\note[item]<4>{in kernel 5.14}
+\note[item]<4>{for invoking corrective action(s)}
+\note[item]<4>{Has been requested from us - there probably are use-cases}
+\note[item]<4>{No insight or concrete examples - ask from audience}
+
 \begin{block}{Linux has 3 severity categories}
 
 \end{block}
@@ -340,8 +432,7 @@ PMIC - Power Management Integrated Circuit
 		\item Unconditional \textcolor{magenta}{shutdown by HW}
 	\end{itemize}
 }
-	\note[item]<2>{PROTECTION example, severe over-voltage - PMIC shuts down all or offending outputs}
-	\note[item]<2>{Could be also temperature-error or over-current}
+
 
 	\item \textbf{ERROR}
 \onslide<3>{
@@ -349,18 +440,14 @@ PMIC - Power Management Integrated Circuit
 		\item \textcolor{red}{Irrecoverable error,} system not expected to be usable. Error handling by software.
 	\end{itemize}
 }
-	\note[item]<3>{Some PMICs may not automatically shut down outputs - SW should do it}
-	\note[item]<3>{ERROR still indicate fatal issues - HW not working}
+
 	\item  \textbf{WARNING} - NEW(ish)
 \onslide<4>{
 	\begin{itemize}
 		\item \textcolor{orange}{Something is off-limit,} system still usable but a recovery action should be taken to prevent escalation to errors
 	\end{itemize}
 }
-		\note[item]<4>{WARNING included in kernel 5.14}
-		\note[item]<4>{Intended to be used for invoking corrective action(s)}
-		\note[item]<4>{Has been requested from us - there probably are use-cases}
-		\note[item]<4>{I have no insight as to what they could be - very interested in learning any concrete examples - ask from audience}
+
 \end{itemize}
 \end{frame}
 
@@ -368,8 +455,24 @@ PMIC - Power Management Integrated Circuit
 
 \begin{frame}[t]{Safety limits, device-tree}\vspace{4pt}
 
-\note[item]<1>{Often board specific - Can be provided via device-tree}
+%\note[item]<1>{Often board specific - Can be provided via device-tree}
+\note[item]<1>{Board specific -> via device-tree}
 \note[item]<1>{property format from box}
+
+%\note[item]<2>{value sets new limit}
+%\note[item]<2>{1 / 0 special values - they are used to indicate enable / disable}
+\note[item]<2>{explain values, pause}
+
+\note[item]<3>{I have no good answer.}
+\note[item]<3>{Ask, What happens if silently ignored?}
+\note[item]<3>{Ask, What happens if regulator registration fails?}
+\note[item]<3>{/* If limit is silently ignored - problems for example when changing a component and new driver does not support limits */}
+\note[item]<3>{/* If registration fails, system may not boot, boot without display etc. */}
+\normalsize
+\note[item]<3>{Currently just log a warning}
+\note[item]<3>{In general, is there a way to mark NOT supported properties to binding docs? Would it help? Including ALL regulator bindings does hide this at a validation stage}
+\note[item]{pause}
+\note[item]<3>{I know you are eager to see the code :) So, let's look at some}
 
 \onslide<1-2>{
 \begin{block}{Property format:}
@@ -397,23 +500,11 @@ Values:
 \end{itemize}
 }
 
-\note[item]<2>{value sets new limit}
-\note[item]<2>{1 / 0 special values - they are used to indicate enable / disable}
-
-
 \only<3->{
 \textcolor{red}{\textbf{What if hardware does not support given limit?}}
 }
 
-\note[item]<3>{I have no good answer.}
-\note[item]<3>{What happens if silently ignored?}
-\note[item]<3>{What happens if regulator registration fails?}
-\note[item]<3>{If limit is silently ignored - problems for example when changing a component and new driver does not support limits}
-\note[item]<3>{If registration fails, system may not boot, boot without display etc.}
-\note[item]<3>{Currently just log a warning}
-\note[item]<3>{In general, is there a way to mark NOT supported properties to binding docs? Would it help? Including ALL regulator bindings does hide this at a validation stage}
-\note[item]{pause}
-\note[item]<3>{I know you are eager to see the code :) So, let's look at some}
+
 \end{frame}
 
 %--------------  limit config callbacks page
@@ -531,6 +622,8 @@ static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA,
 	\item \textbf{NOTIFICATION}
 	\begin{itemize}
 		\item sent by provider (usually) from interrupt
+		\item invoke consumer callback (blocking notifier call-chain)
+		\item In some (many) cases IRQ is held active for whole duration of error
 		\item no polling needed
 		\item regulator$\_$register$\_$notifier()
 		\item can send also other events
@@ -566,8 +659,8 @@ include/linux/regulator/consumer.h
 \note[item]{Note, not all of the notificatin types listed as some are not failures}
 \note[item]{Last one (WARN-MASK) is not event but a mask for consumers to allow checking if notification was a warning}
 \begin{lstlisting}
-#define REGULATOR_EVENT_UNDER_VOLTAGE
-#define REGULATOR_EVENT_OVER_CURRENT
+#define REGULATOR_EVENT_UNDER_VOLTAGE 
+#define REGULATOR_EVENT_OVER_CURRENT  
 #define REGULATOR_EVENT_REGULATION_OUT
 #define REGULATOR_EVENT_FAIL
 #define REGULATOR_EVENT_OVER_TEMP
@@ -583,26 +676,26 @@ include/linux/regulator/consumer.h
 
 %--------------  Notifications page
 
-\begin{frame}{Notifications}
-\note[item]{Usually an IRQ is generated by HW when error is observed}
-\note[item]{Regulator notifications use blocking call-chain, notifiers should fire from process context}
-\note[item]{Often the IRQ is held active for the duration of a problem}
-\note[item]{Need special handling to avoid IRQ storm which would not exactly help mitigating issues}
-\note[item]{The event executes the action registered by the consumer}
-Usually IRQ backed
-\begin{enumerate}
-	\item PMIC detects error and generates IRQ
-	\item IRQ handler sends notification
-	\item Regulator consumer action is executed
-\end{enumerate}
-\pause
-In some (many) cases IRQ is held active for whole duration of error
-\begin{itemize}
-	\item Maybe because these IRQs are considered as a last thing?
-	\item Maybe because there is need to ensure IRQ is not missed?
-	\item Does not play well with all systems
-\end{itemize}
-\end{frame}
+%\begin{frame}{Notifications}
+%\note[item]{Usually an IRQ is generated by HW when error is observed}
+%\note[item]{Regulator notifications use blocking call-chain, notifiers should fire from process context}
+%\note[item]{Often the IRQ is held active for the duration of a problem}
+%\note[item]{Need special handling to avoid IRQ storm which would not exactly help mitigating issues}
+%\note[item]{The event executes the action registered by the consumer}
+%Usually IRQ backed
+%\begin{enumerate}
+%	\item PMIC detects error and generates IRQ
+%	\item IRQ handler sends notification
+%	\item Regulator consumer action is executed
+%\end{enumerate}
+%\pause
+%In some (many) cases IRQ is held active for whole duration of error
+%\begin{itemize}
+%	\item Maybe because these IRQs are considered as a last thing?
+%	\item Maybe because there is need to ensure IRQ is not missed?
+%	\item Does not play well with all systems
+%\end{itemize}
+%\end{frame}
 
 %-------------- IRQ helper page
 

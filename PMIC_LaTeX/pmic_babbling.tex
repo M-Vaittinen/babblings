@@ -509,15 +509,21 @@ Values:
 
 %--------------  limit config callbacks page
 
+\newcommand{\mycfile}[1]{\textit{\small #1}}
+
 \begin{frame}[fragile]{Callbacks for configuring the limits}
 \note[item]<1>{Callbacks for over-current, over- and under-voltage, over temperature}
 \note[item]<1>{Arguments include the limit, severity (PROT, ERR, WARN) and enable/disable}
 \note[item]<2>{Callbacks are among the other regulator ops which is pointed from the regulator description}
 \note[item]<3>{The description with ops is passed to regulator registration}
 
+%\textbf{Regulator framework interface:}\vspace{4pt}
+
+%\small include/linux/regulator/driver.h
+%\small \textit{include/linux/regulator/driver.h}
+\mycfile{include/linux/regulator/driver.h}
 \lstset{language=C}
 \scriptsize
-
 \begin{lstlisting}
 struct regulator_ops {
 	// snip
@@ -527,8 +533,8 @@ struct regulator_ops {
 	      int lim_uV, int severity, bool enable);
 	int (*set_under_voltage_protection)(struct regulator_dev *,
 	     int lim_uV, int severity, bool enable);
-	int (*set_thermal_protection)(struct regulator_dev *, int lim,
-	     int severity, bool enable);
+	int (*set_thermal_protection)(struct regulator_dev *,
+	     int lim, int severity, bool enable);
 };
 \end{lstlisting}
 \pause
@@ -543,10 +549,9 @@ struct regulator_desc {
 
 \begin{lstlisting}
 struct regulator_dev *devm_regulator_register(struct device *dev,
-			  const struct regulator_desc *regulator_desc,
-			  const struct regulator_config *config);
+		const struct regulator_desc *regulator_desc,
+		const struct regulator_config *config);
 \end{lstlisting}
-
 \end{frame}
 
 %--------------  page limiting Example
@@ -560,6 +565,9 @@ struct regulator_dev *devm_regulator_register(struct device *dev,
 \note[item]{for example BD9576 has different register and limit ranges for warning and protection}
 \note[item]{From the PMIC operation POV there is no difference between ERROR and WARNING}
 \note[item]{Finally if limits were sane, the driver updates new limits to registers and returns Ok}
+
+\mycfile{drivers/regulator/bd9576-regulator.c}
+
 \lstset{language=C}
 \scriptsize
 \begin{lstlisting}[commentstyle=\color{orange}]
@@ -638,6 +646,7 @@ static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA,
 \note[item]{The available ERROR definitions}
 \note[item]{I've used REGULATION-OUT for over-voltage}
 \note[item]{Not sure where REGULATOR-ERROR-FAIL is used}
+\mycfile{include/linux/regulator/consumer.h}
 \begin{lstlisting}
 #define REGULATOR_ERROR_UNDER_VOLTAGE
 #define REGULATOR_ERROR_OVER_CURRENT
@@ -649,7 +658,6 @@ static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA,
 #define REGULATOR_ERROR_OVER_VOLTAGE_WARN
 #define REGULATOR_ERROR_OVER_TEMP_WARN
 \end{lstlisting}
-include/linux/regulator/consumer.h
 \end{frame}
 
 %--------------  list of notifications page
@@ -658,6 +666,7 @@ include/linux/regulator/consumer.h
 \note[item]{The available EVENT definitions}
 \note[item]{Note, not all of the notificatin types listed as some are not failures}
 \note[item]{Last one (WARN-MASK) is not event but a mask for consumers to allow checking if notification was a warning}
+\mycfile{include/linux/regulator/consumer.h}
 \begin{lstlisting}
 #define REGULATOR_EVENT_UNDER_VOLTAGE 
 #define REGULATOR_EVENT_OVER_CURRENT  
@@ -671,7 +680,7 @@ include/linux/regulator/consumer.h
 #define REGULATOR_EVENT_OVER_TEMP_WARN
 #define REGULATOR_EVENT_WARN_MASK
 \end{lstlisting}
-include/linux/regulator/consumer.h
+
 \end{frame}
 
 %--------------  Notifications page
@@ -792,6 +801,8 @@ void *regulator_irq_helper(struct device *dev,
 \note[item]<5>{errors that are common to all regulator devices this IRQ can be indicating errors for}
 \note[item]<5>{errors specific to only some of the regulator devices}
 \note[item]<5>{and finally an array of the regulator devices for which this IRQ can indicate problems}
+
+\mycfile{include/linux/regulator/driver.h}
 \lstset{language=C}
 \scriptsize
 
@@ -856,6 +867,8 @@ void *regulator_irq_helper(struct device *dev,
 \note[item]<4>{it is possible there is some new errors - or some old have gone while some have stayed. In this case the renable may prefer indicating that IRQ should be enabled. This will probably yield a new IRQ and updated set of notifications to be sent}
 
 \note[item]<5>{finally, for simple HW where an IRQ can only signal one type of errors, on one regulator, driver can use generic helper called regulator$\_$irq$\_$map$\_$event$\_$simple()}
+
+\mycfile{include/linux/regulator/driver.h}
 \lstset{language=C}
 \scriptsize
 
@@ -910,6 +923,8 @@ int regulator_irq_map_event_simple(int irq,
 \note[item]<2>{If no regulators were indicating problems, then we just return Ok}
 \note[item]<3>{Else, we will be setting the bits for failing regulators. The BD9576 status register directly has this information in correct format (bit 0 maps to first regulator, bit 1 in second and so on)}
 \note[item]<3>{finally, the notification and error flags are updated. The BD9576 uses same IRQ mechanism for WARNING and ERROR level notifications allowing the board designer to decide whether OVD should be treated as an ERROR or WARNING severity issue. The flags to advertise are then selected at probe time}
+
+\mycfile{drivers/regulator/bd9576-regulator.c}
 \lstset{language=C}
 \scriptsize
 
@@ -951,20 +966,23 @@ static int bd9576_ovd_handler(int irq, struct regulator_irq_data *rid,
 
 %--------------  Helper regisration example
 
-\begin{frame}[fragile]{Helper registration 1/2}
+\begin{frame}[fragile, t]{Helper registration 1/3}\vspace{4pt}
 
 \note<1>{Helper registration. Let's look at relevant bits of BD9576 PMIC driver to see an exaple of helper registration for over-voltage}
 \note[item]<1>{ Just read the intention and reveal the code block +  pause so people can understand the code}
-\note[item]<2>{name - obvious}
-\note[item]<2>{we keep IRQs disabled for a second}
-\note[item]<2>{We don't make this fatal or give a die() callback}
-\note[item]<2>{populate map$\_$event and renable}
+\note[item]{name - obvious}
+\note[item]{we keep IRQs disabled for a second}
+\note[item]{We don't make this fatal or give a die() callback}
+\note[item]{populate map$\_$event and renable}
 \lstset{language=C}
 
-Fill the helper configuration
-\scriptsize
+\large Fill the helper configuration
+\vfill
+%\pause
 
-\pause
+\mycfile{drivers/regulator/bd9576-regulator.c}
+%\scriptsize
+\scriptsize
 \begin{lstlisting}
 static const struct regulator_irq_desc bd9576_notif_ovd = {              
        .name = "bd9576-ovd",                                            
@@ -976,16 +994,19 @@ static const struct regulator_irq_desc bd9576_notif_ovd = {
 \end{lstlisting}
 \end{frame}
 
-\begin{frame}[fragile]{Helper registration 2/2}
+\begin{frame}[fragile, t]{Helper registration 2/3}\vspace{4pt}
 
-\note[item]<2>{in a loop where we register regulators, we add regulators which can inform OVD to the ovd$\_$devs array}
+\note[item]{in a loop where we register regulators, we add regulators which can inform OVD to the ovd$\_$devs array}
 
 \lstset{language=C}
 
-Create an array of regulators this IRQ may concern
+\large Create an array of regulators this IRQ may concern
+\vfill
+%\pause
+\mycfile{drivers/regulator/bd9576-regulator.c}
+
 \scriptsize
 
-\pause
 \begin{lstlisting}
 struct regulator_dev *ovd_devs[BD9576_NUM_OVD_REGULATORS];
 
@@ -1000,12 +1021,14 @@ for (i = 0; i < num_rdev; i++) {
 		ovd_devs[i] = r->rdev;
 }
 \end{lstlisting}
-\pause
-\normalsize
+\end{frame}
+
+\begin{frame}[fragile, t]{Helper registration 3/3}\vspace{4pt}
 Fill possible errors this IRQ may indicate and register the helper
+\vfill
+\mycfile{drivers/regulator/bd9576-regulator.c}
 \scriptsize
 
-\pause
 \begin{lstlisting}
 int ovd_errs = REGULATOR_ERROR_OVER_VOLTAGE_WARN |
 	 REGULATOR_ERROR_REGULATION_OUT;

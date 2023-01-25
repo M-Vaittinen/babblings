@@ -124,8 +124,10 @@ Functional-safety helpers in regulator subsystem
 %-------------- Powering a modern SOC page
 
 %Small PSY clk and SOC boxes
-\tikzstyle{s_psys} = [rectangle, rounded corners, minimum width=2cm, minimum height=0.5cm,text centered, text width=2cm, draw=black, fill=red!30]
-\tikzstyle{s_clk} = [rectangle, rounded corners, minimum width=2cm, minimum height=0.5cm,text centered, text width=2cm, draw=black, fill=orange!40]
+%\tikzstyle{s_psys} = [rectangle, rounded corners, minimum width=2cm, minimum height=0.5cm,text centered, text width=2cm, draw=black, fill=red!30]
+\tikzstyle{s_psys} = [rectangle, rounded corners, minimum width=2cm, minimum height=0.4cm,text centered, text width=2.5cm, draw=black, fill=red!30]
+%\tikzstyle{s_clk} = [rectangle, rounded corners, minimum width=2cm, minimum height=0.5cm,text centered, text width=2cm, draw=black, fill=orange!40]
+\tikzstyle{s_clk} = [rectangle, rounded corners, minimum width=2cm, minimum height=0.4cm,text centered, text width=2.5cm, draw=black, fill=orange!40]
 \tikzstyle{s_socs} = [rectangle, rounded corners, minimum width=2.5cm, minimum height=3cm,text centered, text width=2.5cm, draw=black, fill=green!30]
 
 \begin{frame}{Powering a modern SOC 1/2}
@@ -135,13 +137,13 @@ Functional-safety helpers in regulator subsystem
 \note[item]{RTC clk}
 
 	\begin{columns}[onlytextwidth]
-	\column{0.25\linewidth}
+	\column{0.22\linewidth}
 
 	 Modern SOCs can require multiple specific voltages
 
-	\column{0.72\linewidth} \vspace{4pt}
+	\column{0.75\linewidth} \vspace{4pt}
 
-	\begin{tikzpicture}[node distance=0.6cm]
+	\begin{tikzpicture}[node distance=0.52cm]
 		\node (nvcc_snvs) [s_psys] {LDO1 1.8V};
 		\node (vdd_snvs) [s_psys, below of=nvcc_snvs] {LDO2 0.8V};
 		\node (rtc_clk) [s_clk, below of=vdd_snvs] {RTC-CLK};
@@ -156,6 +158,9 @@ Functional-safety helpers in regulator subsystem
 		\node (nvcc_3v3) [s_psys, below of=nvcc_dram] {BUCK6 3.3V};
 		\node (vdd_phy_1v2) [s_psys, below of=nvcc_3v3] {LDO6 1.2V};
 		\node (ldo5) [s_psys, below of=vdd_phy_1v2] {LDO5 3.3V};
+		\node (mux)[s_psys, below of=ldo5]{MUX 1.8$\_$3.3V};
+
+		\node (mux_to)[right of=mux, xshift=6cm]{};
 
 		\draw [arrow] (nvcc_snvs) node[anchor=south, xshift=3cm] {\scriptsize NVCC-SNVS} -|  ([xshift=1.6cm] imx8);
 		\draw [arrow] (vdd_snvs) node[anchor=south, xshift=3cm] {\scriptsize VDD-SNVS} -| ([xshift=0.5cm] imx8);
@@ -171,37 +176,38 @@ Functional-safety helpers in regulator subsystem
 
 		\draw [arrow] (vdd_phy_1v2) node[anchor=north, xshift=3cm] {\scriptsize VDD-PHY-1V2} -| ([xshift=0.5cm] imx8);
 		\draw [arrow] (ldo5) node[anchor=north, xshift=3cm] {\scriptsize LDO5-OUT} -| ([xshift=1.6cm] imx8);
+		\draw [arrow](mux) node[anchor=north, xshift=3cm] {\scriptsize SD-CARD} -- (mux_to);
 	\end{tikzpicture}
 	\end{columns}
 \end{frame}
 
-\begin{frame}[t]{Powering a modern SOC 1/2}\vspace{4pt}
-	\begin{columns}[onlytextwidth]
-	\column{0.5\linewidth}
+%\begin{frame}[t]{Powering a modern SOC 1/2}\vspace{4pt}
+%	\begin{columns}[onlytextwidth]
+%	\column{0.5\linewidth}
+%
+%	 Modern SOCs can require multiple specific voltages
+%
+%	\column{0.7\linewidth}
+%	\includegraphics[width=0.4\linewidth]{img/imx8_power.png}
+%	\end{columns}
+%
+%\end{frame}
 
-	 Modern SOCs can require multiple specific voltages
-
-	\column{0.7\linewidth}
-	\includegraphics[width=0.4\linewidth]{img/imx8_power.png}
-	\end{columns}
-
-\end{frame}
-
-\begin{frame}[t]{Powering a modern SOC 1/2}%\vspace{4pt}
-	\begin{columns}[onlytextwidth]
-	\column{0.24\linewidth}
-%	\center
-	 Modern SOCs can require multiple specific voltages
-
-	\column{0.38\linewidth}
-	\includegraphics[width=1\linewidth]{img/imx8_power_split1.png}%\vspace{20pt}
-	\center continues ...
-	\column{0.38\linewidth}\vspace{50pt}
-	\center ... continues \\[12pt]
-	\includegraphics[width=1\linewidth]{img/imx8_power_split2.png}
-	\end{columns}
-
-\end{frame}
+%\begin{frame}[t]{Powering a modern SOC 1/2}%\vspace{4pt}
+%	\begin{columns}[onlytextwidth]
+%	\column{0.24\linewidth}
+%
+%	 Modern SOCs can require multiple specific voltages
+%
+%	\column{0.38\linewidth}
+%	\includegraphics[width=1\linewidth]{img/imx8_power_split1.png}%\vspace{20pt}
+%	\center continues ...
+%	\column{0.38\linewidth}\vspace{50pt}
+%	\center ... continues \\[12pt]
+%	\includegraphics[width=1\linewidth]{img/imx8_power_split2.png}
+%	\end{columns}
+%
+%\end{frame}
 
 
 %-------------- Powering a modern SOC page 2
@@ -398,7 +404,7 @@ PMIC - Power Management Integrated Circuit
 
 \note[item]{framework between hardware driver - user}
 \note[item]{regulator API to consumers}
-\note[item]{framework -> driver -> PMIC regs}
+\note[item]{framework -\textgreater driver -\textgreater PMIC regs}
 \note[item]{example, sensor driver}
 \note[item]{request enable via regulator API}
 \note[item]{regulator framework calls callbacks from regulator driver}
@@ -451,30 +457,33 @@ PMIC - Power Management Integrated Circuit
 \note[item]<4>{No insight or concrete examples - ask from audience}
 
 \begin{block}{Linux has 3 severity categories}
-
+%\begin{itemize}
+The categories - PROTECTION, ERROR, WARNING - inform the hardware state.
+%\end{itemize}
 \end{block}
 
-\begin{itemize}
-	\item  \textbf{PROTECTION}
+%\begin{itemize}
 \onslide<2>{
+%	\item  \textbf{PROTECTION}
+\textbf{PROTECTION}
 	\begin{itemize}
 		\item Unconditional \textcolor{magenta}{shutdown by HW}
 	\end{itemize}
 }
 
-
-	\item \textbf{ERROR}
 \onslide<3>{
+%	\item \textbf{ERROR}
+	\textbf{ERROR}
 	\begin{itemize}
 		\item \textcolor{red}{Irrecoverable error,} system not expected to be usable. Error handling by software.
 	\end{itemize}
 }
-
-	\item  \textbf{WARNING} - NEW(ish)
 \onslide<4>{
+%	\item  \textbf{WARNING} - NEW(ish)
+	\textbf{WARNING} - NEW(ish)
 	\begin{itemize}
 		\item \textcolor{orange}{Something is off-limit,} system still usable but a recovery action should be taken to prevent escalation to errors
-	\end{itemize}
+%	\end{itemize}
 }
 
 \end{itemize}
@@ -485,23 +494,12 @@ PMIC - Power Management Integrated Circuit
 \begin{frame}[t]{Safety limits, device-tree}\vspace{4pt}
 
 %\note[item]<1>{Often board specific - Can be provided via device-tree}
-\note[item]<1>{Board specific -> via device-tree}
+\note[item]<1>{Board specific -\textgreater via device-tree}
 \note[item]<1>{property format from box}
 
 %\note[item]<2>{value sets new limit}
 %\note[item]<2>{1 / 0 special values - they are used to indicate enable / disable}
 \note[item]<2>{explain values, pause}
-
-\note[item]<3>{I have no good answer.}
-\note[item]<3>{Ask, What happens if silently ignored?}
-\note[item]<3>{Ask, What happens if regulator registration fails?}
-\note[item]<3>{/* If limit is silently ignored - problems for example when changing a component and new driver does not support limits */}
-\note[item]<3>{/* If registration fails, system may not boot, boot without display etc. */}
-\normalsize
-\note[item]<3>{Currently just log a warning}
-\note[item]<3>{In general, is there a way to mark NOT supported properties to binding docs? Would it help? Including ALL regulator bindings does hide this at a validation stage}
-\note[item]{pause}
-\note[item]<3>{I know you are eager to see the code :) So, let's look at some}
 
 \onslide<1-2>{
 \begin{block}{Property format:}
@@ -528,12 +526,22 @@ Values:
 	\item other =\textgreater new limit
 \end{itemize}
 }
+\end{frame}
 
-\only<3->{
+\addtocounter{framenumber}{-1}
+\begin{frame}[t]{Safety limits, device-tree}\vspace{4pt}
+\note[item]{I have no good answer.}
+\note[item]{Ask, What happens if silently ignored?}
+\note[item]{Ask, What happens if regulator registration fails?}
+\note[item]{/* If limit is silently ignored - problems for example when changing a component and new driver does not support limits */}
+\note[item]{/* If registration fails, system may not boot, boot without display etc. */}
+\normalsize
+\note[item]{Currently just log a warning}
+\note[item]{In general, is there a way to mark NOT supported properties to binding docs? Would it help? Including ALL regulator bindings does hide this at a validation stage}
+\note[item]{pause}
+\note[item]{I know you are eager to see the code :) So, let's look at some}
+
 \textcolor{red}{\textbf{What if hardware does not support given limit?}}
-}
-
-
 \end{frame}
 
 %--------------  limit config callbacks page

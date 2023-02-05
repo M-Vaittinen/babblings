@@ -417,6 +417,66 @@ PMIC - Power Management Integrated Circuit
 \includegraphics[width=1\linewidth]{img/regulator_users.png}
 \end{frame}
 
+\newcommand{\mycfile}[1]{\textit{\small #1}}
+
+%-------------- Regulator ops
+
+\begin{frame}[fragile, t]{Regulator driver ops}\vspace{4pt}
+\begin{block}{Regulator driver relies on callbacks}
+Regulator (provider) registers callbacks to regulator framework.
+Framework handles regulators using these ops.
+\end{block}
+
+\mycfile{include/linux/regulator/driver.h}
+\lstset{language=C}
+\scriptsize
+\begin{lstlisting}
+struct regulator_ops {
+	// snip
+	int (*enable) (struct regulator_dev *);
+	int (*disable) (struct regulator_dev *);
+	int (*is_enabled) (struct regulator_dev *);
+	int (*set_voltage_sel) (struct regulator_dev *, unsigned selector);
+	int (*get_voltage_sel) (struct regulator_dev *);
+	// snip
+};
+\end{lstlisting}
+\pause
+
+\begin{lstlisting}
+struct regulator_desc {
+	/* Plenty of regulator properties */
+	/* Also information for the helpers */
+	/* Finally the ops */
+	const struct regulator_ops *ops;
+}
+\end{lstlisting}
+\end{frame}
+
+%-------------- Regulator constraints
+
+\begin{frame}[t]{Regulator constraints}\vspace{4pt} 
+\begin{block}{Regulators can have constraints.}
+Not to be mixed with limits discussed during the rest of the presentation.
+\end{block}
+\par
+\begin{columns}
+\column[]{0.72\linewidth}
+\begin{itemize}
+	\item struct regulation$\_$constraints \mycfile{include/linux/regulator/machine.h}
+	\item hard limits forced by the regulator framework.
+	\item can be given by driver in dynamic init data
+	\item can be given via device-tree
+	\item voltage / current range, prevent disabling, step size ...
+\end{itemize}
+\column[]{0.28\linewidth}
+%width=1\linewidth
+\begin{figure}
+\includegraphics[height=0.55\textheight]{image_dl/stopman.jpg}
+\scriptsize Credit:\thinspace{\itshape Peggy und Marco Lachmann-Anke, Pixabay}
+\end{figure}
+\end{columns}
+\end{frame}
 %============== Section Functional-safety
 
 \addtocounter{framenumber}{-1}
@@ -428,6 +488,10 @@ PMIC - Power Management Integrated Circuit
 \subsection{Severity levels and limit values}
 \subsection{Regulator errors and notifications}
 \subsection{Helpers and examples}
+\begin{figure}
+\includegraphics[scale=0.36]{image_dl/kissa-hakissa.jpg}
+\scriptsize Credit:\thinspace{\itshape Gerhard, Pixabay}
+\end{figure}
 \end{frame}
 
 
@@ -546,7 +610,6 @@ Values:
 
 %--------------  limit config callbacks page
 
-\newcommand{\mycfile}[1]{\textit{\small #1}}
 
 \begin{frame}[fragile]{Callbacks for configuring the limits}
 \note[item]<1>{Callbacks for over-current, over- and under-voltage, over temperature}

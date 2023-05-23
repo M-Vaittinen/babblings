@@ -1,4 +1,4 @@
-\documentclass[aspectratio=169]{beamer}
+\documentclass[10pt]{beamer}
 \usetheme[progressbar=frametitle]{metropolis}
 \setbeamertemplate{frame numbering}[fraction]
 \usecolortheme{beaver}
@@ -42,7 +42,7 @@
 
 \metroset{block=fill}
 
-\begin{frame}{Topics} %\vspace{4pt}
+\begin{frame}[t]{Topics} \vspace{4pt}
 %\note[item]{Shallow overview on what is PMIC and why it is needed}
 %\note[item]{Linux oriented Short glance of drivers can be needed for a PMIC}
 %\note[item]{functional safety and reporting hw issues}
@@ -52,19 +52,14 @@
 \note[item]{PMIC drivers}
 \note[item]{Functional safety}
 
-\begin{columns}
-\column{0.58\linewidth} %\vspace{16pt}
-\tableofcontents
-\column{0.38\linewidth}
-
 \begin{block}{Goal}
 What is PMIC \\
 Regulator errors and notifications \\
 Functional-safety helpers in regulator subsystem
-\end{block} %\vspace{8pt}
+\end{block} \vspace{8pt}
 
-\end{columns}
-
+\scriptsize
+\tableofcontents
 \end{frame}
 
 %-------------- about me page
@@ -227,9 +222,9 @@ Functional-safety helpers in regulator subsystem
 \note[item]{PCB area w/ discrete components}
 \note[item]{New design for each  board(?)}
 	\begin{columns}[onlytextwidth]
-	\column{0.20\linewidth}
+	\column{0.18\linewidth}
 		And specific timings...
-	\column{0.60\linewidth}\vspace{4pt}
+	\column{0.82\linewidth}\vspace{4pt}
 		\includegraphics[width=1\linewidth]{img/BD71847_start_up_seq.png}
 	\end{columns}
 \end{frame}
@@ -238,8 +233,6 @@ Functional-safety helpers in regulator subsystem
 
 \begin{frame}{More control...}
 
-\begin{columns}
-\column{0.5\linewidth}
 \note[item]<1>{Importance of power saving increases. My wife pays the electricity bill - she has told me this.}
 \note[item]<1>{example: unused video-accelerator off}
 \note[item]<1>{temperature}
@@ -265,7 +258,7 @@ Powering-on a system at given time / by an event.
 	\item HALL sensor, ...
 \end{itemize}
 \pause
-\column{0.5\linewidth}
+
 More functionality
 \begin{itemize}
 	\item Battery / charger
@@ -277,9 +270,6 @@ More functionality
 		\item Temperature monitoring
 	\end{itemize}
 \end{itemize}
-
-\end{columns}
-
 %\note{More needs}
 \note[item]<3>{battery powered devices everywhere}
 \note[item]<3>{Watchdog almost every device has it}
@@ -454,16 +444,9 @@ struct regulator_ops {
 	// snip
 };
 \end{lstlisting}
-%\pause
-\end{frame}
+\pause
 
-\begin{frame}[fragile, t]{Regulator descriptor}\vspace{4pt}
-
-\mycfile{include/linux/regulator/driver.h}
-\lstset{language=C}
-\scriptsize
 \begin{lstlisting}
-
 struct regulator_desc {
 	/* Plenty of regulator properties */
 	/* Also information for the helpers */
@@ -471,22 +454,13 @@ struct regulator_desc {
 	const struct regulator_ops *ops;
 }
 \end{lstlisting}
-
-\pause
-\begin{lstlisting}
-struct regulator_dev *
-regulator_register(struct device *dev,
-                   const struct regulator_desc *regulator_desc,
-                   const struct regulator_config *cfg)
-\end{lstlisting}
-
 \end{frame}
 
 %-------------- Regulator constraints
 
 \begin{frame}[t]{Regulator constraints}\vspace{4pt} 
 \begin{block}{Regulators can have constraints.}
-Not to be mixed with limits discussed at the end of the presentation.
+Not to be mixed with limits discussed during the rest of the presentation.
 \end{block}
 \par
 \begin{columns}
@@ -498,8 +472,7 @@ Not to be mixed with limits discussed at the end of the presentation.
 	\item can be given via device-tree
 	\item voltage / current range, prevent disabling, step size ...
 \end{itemize}
-%\column[]{0.28\linewidth}
-\column[]{0.22\linewidth}
+\column[]{0.28\linewidth}
 %width=1\linewidth
 \begin{figure}
 \includegraphics[height=0.55\textheight]{image_dl/stopman.jpg}
@@ -612,12 +585,12 @@ Over current:
 Similar for over voltage (ov), under voltage (uv) and temperature (temp)
 }
 \onslide<2>{
-%\par
-%Values:
+\par
+Values:
 \begin{itemize}
 	\item 0 =\textgreater disable
 	\item 1 =\textgreater enable
-	\item other =\textgreater limit value
+	\item other =\textgreater new limit
 \end{itemize}
 }
 \end{frame}
@@ -675,9 +648,17 @@ struct regulator_ops {
 \pause
 
 \begin{lstlisting}
-struct regulator_desc {};
-struct regulator_dev *[devm_]regulator_register(...,
-		const struct regulator_desc *regulator_desc, ...);
+struct regulator_desc {
+	// snip
+	const struct regulator_ops *ops;
+};
+ \end{lstlisting}
+\pause
+
+\begin{lstlisting}
+struct regulator_dev *devm_regulator_register(struct device *dev,
+		const struct regulator_desc *regulator_desc,
+		const struct regulator_config *config);
 \end{lstlisting}
 \end{frame}
 
@@ -685,7 +666,6 @@ struct regulator_dev *[devm_]regulator_register(...,
 
 
 \begin{frame}[fragile]{Simplified example}
-\note{Work by Benjamin. Core uses these to disable monitoring when config takes place}
 \note[item]{Example of over-current protection example using pieces of ROHM BD9576 driver as example}
 \note[item]{Regulator framework parses dt properties and invokes callback with values found from DT}
 \note[item]{Driver typically checks for parameter sanity/support}
@@ -694,26 +674,30 @@ struct regulator_dev *[devm_]regulator_register(...,
 \note[item]{From the PMIC operation POV there is no difference between ERROR and WARNING}
 \note[item]{Finally if limits were sane, the driver updates new limits to registers and returns Ok}
 
-\scriptsize
 \mycfile{drivers/regulator/bd9576-regulator.c}
 
 \lstset{language=C}
-%\tiny
-
+\scriptsize
 \begin{lstlisting}[commentstyle=\color{orange}]
-static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA, int severity, bool enable)
+static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA,
+			  int severity, bool enable)
 {
+	...
+
 	/* Return -EINVAL for unsupported configurations */
 	if ((lim_uA && !enable) || (!lim_uA && enable))
 		return -EINVAL;
 
-	/* Select the correct register and appropriate register-value conversion
-	 * for given severity and limit.. */
+	/*
+	 * Select the correct register and appropriate register-value
+	 * conversion for given severity and limit..
+	 */
 	if (severity == REGULATOR_SEVERITY_PROT) {
 		...
 	} else {
 		...
 	}
+
 	/* Write configuration to registers */
 	return bd9576_set_limit(range, num_ranges, d->regmap,
 				reg, mask, Vfet);
@@ -739,35 +723,29 @@ static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA, int severity, 
 	\item ERRORs
 	\item NOTIFICATIONs
 \end{itemize}
-\end{block}\vspace{4pt}
+\end{block}
 
-\begin{columns}
-\column[]{0.35\linewidth}
-%\begin{itemize}
+\begin{itemize}
 \onslide<2->{
-	%\item  
-	\textbf{ERROR}
+	\item  \textbf{ERROR}
 	\begin{itemize}
 		\item set by provider
 		\item queried (polled) by consumer
 		\item regulator$\_$get$\_$error$\_$flags()
 	\end{itemize}
 }
-\column[]{0.60\linewidth}
 \onslide<3>{
-	%\item
-	\textbf{NOTIFICATION}
+	\item \textbf{NOTIFICATION}
 	\begin{itemize}
-%		\item sent by provider (usually) from interrupt
-		\item provider invokes consumer callback (blocking notifier call-chain)
+		\item sent by provider (usually) from interrupt
+		\item invoke consumer callback (blocking notifier call-chain)
+		\item In some (many) cases IRQ is held active for whole duration of error
 		\item no polling needed
-		\item in some cases IRQ is held active
 		\item regulator$\_$register$\_$notifier()
-		\item can send also other (non error) events
+		\item can send also other events
 	\end{itemize}
 }
-%\end{itemize}
-\end{columns}
+\end{itemize}
 \end{frame}
 
 %--------------  list of errors page
@@ -919,13 +897,18 @@ void *regulator_irq_helper(struct device *dev,
 \note[item]<1>{Let's get back to helper registration.}
 \note[item]<1>{Helper config information is given in struct regulator$\_$irq$\_$desc}
 \note[item]<1>{fatal$\_$cnt can be used to mark failures to handle event as fatal. Eg. after checking this many  times for whether the condition is resolved (attempts to re-enable), die() is called or emergency power-off is executed}
-\note[item]<1>{reread$\_$ms is time to wait after failed event mapping until retrying}
-\note[item]<1>{irq$\_$off$\_$ms is time to keep IRQ disabled (before calling renable() if provided}
-\note[item]<1>{skip$\_$off and high$\_$prio are something that were used in existing event implementations}
-\note[item]<1>{skip$\_$off can be specified to not handle IRQs for regulators that are disabled}
-\note[item]<1>{high$\_$prio can be set to use high$\_$priority work-queue for trying to re-enable the IRQ}
-\note[item]<2>{data is pointer which can be used to store data needed in call-backs - like the driver private data}
-\note[item]<2>{Callbacks for die(), mapping event and seeing if IRQ can be re-enabled. We will see the callbacks later}
+\note[item]<2>{reread$\_$ms is time to wait after failed event mapping until retrying}
+\note[item]<2>{irq$\_$off$\_$ms is time to keep IRQ disabled (before calling renable() if provided}
+\note[item]<3>{skip$\_$off and high$\_$prio are something that were used in existing event implementations}
+\note[item]<3>{skip$\_$off can be specified to not handle IRQs for regulators that are disabled}
+\note[item]<3>{high$\_$prio can be set to use high$\_$priority work-queue for trying to re-enable the IRQ}
+\note[item]<4>{data is pointer which can be used to store data needed in call-backs - like the driver private data}
+\note[item]<4>{Callbacks for die(), mapping event and seeing if IRQ can be re-enabled. We will see the callbacks later}
+\note[item]<5>{On top of this on the helper registration we provide}
+\note[item]<5>{device pointer and IRQ information}
+\note[item]<5>{errors that are common to all regulator devices this IRQ can be indicating errors for}
+\note[item]<5>{errors specific to only some of the regulator devices}
+\note[item]<5>{and finally an array of the regulator devices for which this IRQ can indicate problems}
 
 \mycfile{include/linux/regulator/driver.h}
 \lstset{language=C}
@@ -935,8 +918,14 @@ void *regulator_irq_helper(struct device *dev,
 struct regulator_irq_desc {
 	const char *name;
 	int fatal_cnt;
+ \end{lstlisting}
+\pause
+\begin{lstlisting}
 	int reread_ms;
 	int irq_off_ms;
+ \end{lstlisting}
+\pause
+\begin{lstlisting}
 	bool skip_off;
 	bool high_prio;
  \end{lstlisting}
@@ -945,37 +934,18 @@ struct regulator_irq_desc {
 	void *data;
 	int (*die)(struct regulator_irq_data *rid);
 	int (*map_event)(int irq, struct regulator_irq_data *rid,
-			 unsigned long *dev_mask);
+	     unsigned long *dev_mask);
 	int (*renable)(struct regulator_irq_data *rid);
 };
  \end{lstlisting}
-%\pause
-\end{frame}
+\pause
 
-
-\begin{frame}[fragile, t]{Helper Registration}
-\note[item]{On top of this on the helper registration we provide}
-\note[item]{device pointer and IRQ information}
-\note[item]{errors that are common to all regulator devices this IRQ can be indicating errors for}
-\note[item]{errors specific to only some of the regulator devices}
-\note[item]{and finally an array of the regulator devices for which this IRQ can indicate problems}
-
-\begin{itemize}
-	\item IRQ information
-	\item Array of regulators
-	\item Events/Errors this IRQ can inform
-\end{itemize}\vspace{4pt}
-
-\mycfile{include/linux/regulator/driver.h}
-\lstset{language=C}
-\scriptsize
 \begin{lstlisting}
 void *regulator_irq_helper(struct device *dev,
-			   const struct regulator_irq_desc *d,
-			   int irq, int irq_flags, int common_errs,
-			   int *per_rdev_errs,
-			   struct regulator_dev **rdev,
-			   int rdev_amount);
+		   const struct regulator_irq_desc *d, int irq,
+		   int irq_flags, int common_errs, 
+		   int *per_rdev_errs, struct regulator_dev **rdev,
+		   int rdev_amount);
 \end{lstlisting}
 (or a devm-variant)
 \end{frame}
@@ -998,6 +968,13 @@ void *regulator_irq_helper(struct device *dev,
 \note[item]<3>{notifs is the regulator notification flags}
 \note[item]<3>{errors is the regulator error flags}
 \note[item]<3>{possible$\_$errs should contain the errors this IRQ can be informing. Used to clear error statuses when re-enabling the IRQ}
+
+\note[item]<4>{driver can provide a renable() call-back, which should be checking if reported problem has gone and IRQ can be re-enabled}
+\note[item]<4>{gets a pointer to the same struct regulator$\_$irq$\_$data as map$\_$event() did}
+\note[item]<4>{simplest for just checks current status register value and compares to the opaque value}
+\note[item]<4>{it is possible there is some new errors - or some old have gone while some have stayed. In this case the renable may prefer indicating that IRQ should be enabled. This will probably yield a new IRQ and updated set of notifications to be sent}
+
+\note[item]<5>{finally, for simple HW where an IRQ can only signal one type of errors, on one regulator, driver can use generic helper called regulator$\_$irq$\_$map$\_$event$\_$simple()}
 
 \mycfile{include/linux/regulator/driver.h}
 \lstset{language=C}
@@ -1026,45 +1003,22 @@ struct regulator_err_state {
 };
  \end{lstlisting}
 \pause
-\end{frame}
 
-\begin{frame}[fragile, t]{Re-enabling and simple mapping}
-
-
-\note[item]<1>{driver can provide a renable() call-back, which should be checking if reported problem has gone and IRQ can be re-enabled}
-\note[item]<1>{gets a pointer to the same struct regulator$\_$irq$\_$data as map$\_$event() did}
-\note[item]<1>{simplest for just checks current status register value and compares to the opaque value}
-\note[item]<1>{it is possible there is some new errors - or some old have gone while some have stayed. In this case the renable may prefer indicating that IRQ should be enabled. This will probably yield a new IRQ and updated set of notifications to be sent}
-
-\note[item]<1>{finally, for simple HW where an IRQ can only signal one type of errors, on one regulator, driver can use generic helper called regulator$\_$irq$\_$map$\_$event$\_$simple()}
-
-
-
-Helper for simple IRQs\\
-\scriptsize
-\mycfile{include/linux/regulator/driver.h}
-\lstset{language=C}
+\begin{lstlisting}
+int (*renable)(struct regulator_irq_data *rid);
+ \end{lstlisting}
+\pause
 
 \begin{lstlisting}
 int regulator_irq_map_event_simple(int irq,
 			struct regulator_irq_data *rid,
 			unsigned long *dev_mask)
  \end{lstlisting}
-\normalsize
-
-Optional re-enable:
-\scriptsize
-
-\begin{lstlisting}
-int (*renable)(struct regulator_irq_data *rid);
- \end{lstlisting}
-%\pause
-
 \end{frame}
 
 %--------------  Event mapping example
 
-\begin{frame}[fragile]{Event mapping example part I}
+\begin{frame}[fragile]{Event mapping example}
 
 \note[item]<1>{example of ROHM BD9576 over-voltage IRQ's event mapping function}
 \note[item]<1>{This IRQ can be reporting over-voltage for voltage outputs 1 to 4}
@@ -1075,7 +1029,8 @@ int (*renable)(struct regulator_irq_data *rid);
 \note[item]<2>{The status is stored to the opaque data so that we can easily see if stauses have changed at renable()}
 \note[item]<2>{dev$\_$mask is initialized. dev$\_$mask is a bit mask indicating which of the regulators in the status array are flagging problems}
 \note[item]<2>{If no regulators were indicating problems, then we just return Ok}
-
+\note[item]<3>{Else, we will be setting the bits for failing regulators. The BD9576 status register directly has this information in correct format (bit 0 maps to first regulator, bit 1 in second and so on)}
+\note[item]<3>{finally, the notification and error flags are updated. The BD9576 uses same IRQ mechanism for WARNING and ERROR level notifications allowing the board designer to decide whether OVD should be treated as an ERROR or WARNING severity issue. The flags to advertise are then selected at probe time}
 
 \mycfile{drivers/regulator/bd9576-regulator.c}
 \lstset{language=C}
@@ -1099,17 +1054,7 @@ static int bd9576_ovd_handler(int irq, struct regulator_irq_data *rid,
 	if (!(val & OVD_IRQ_VALID_MASK))
 		return 0;
 \end{lstlisting}
-
-%\end{lstlisting}
-\end{frame}
-
-\begin{frame}[fragile]{Event mapping example part II}
-%\pause
-\note[item]{Else, we will be setting the bits for failing regulators. The BD9576 status register directly has this information in correct format (bit 0 maps to first regulator, bit 1 in second and so on)}
-\note[item]{finally, the notification and error flags are updated. The BD9576 uses same IRQ mechanism for WARNING and ERROR level notifications allowing the board designer to decide whether OVD should be treated as an ERROR or WARNING severity issue. The flags to advertise are then selected at probe time}
-
-\lstset{language=C}
-\scriptsize
+\pause
 \begin{lstlisting}
 	*dev_mask = val & BD9576_xVD_IRQ_MASK_VOUT1TO4;
 

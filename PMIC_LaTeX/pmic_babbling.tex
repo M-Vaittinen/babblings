@@ -7,8 +7,8 @@
 \usepackage{listings} % for code
 \usetikzlibrary{fadings}
 
-%\setbeameroption{show notes}
-%\setbeameroption{show notes on second screen=top}
+\setbeameroption{show notes}
+\setbeameroption{show notes on second screen=top}
 
 \title{Linux Power!}
 \subtitle{(From the perspective of a PMIC vendor)}
@@ -25,9 +25,7 @@
 
 
 \begin{frame}[plain]
-\note[item]{Breath, smile, look at them}
 \note[item]{Eye contact. They are your friends. On your side}
-\note[item]{Breath}
 \note[item]{Welcome.}
 \note[item]{Not excited. Terrified}
 \note[item]{audience has expertise - feel free to help me out}
@@ -221,8 +219,8 @@ Functional-safety helpers in regulator subsystem
 %-------------- Powering a modern SOC page 2
 
 \begin{frame}{Powering a modern SOC 2/2}
-\note[item]{TIMINGs - explain state transitions}
 \note[item]{from PMIC spec}
+\note[item]{TIMINGs - explain state transitions}
 \note[item]{shows also internal changes}
 \note[item]{PCB area w/ discrete components}
 \note[item]{New design for each  board(?)}
@@ -458,6 +456,14 @@ struct regulator_ops {
 \end{frame}
 
 \begin{frame}[fragile, t]{Regulator descriptor}\vspace{4pt}
+
+\note[item]<1>{name}
+\note[item]<1>{device-tree match information}
+\note[item]<1>{supported voltages}
+\note[item]<1>{register details for helper-callbacks}
+
+\note[item]<2>{regulator-desc static config}
+\note[item]<2>{regulator-config dynamic config like constrains, regmap, device}
 
 \mycfile{include/linux/regulator/driver.h}
 \lstset{language=C}

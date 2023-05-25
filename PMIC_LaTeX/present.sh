@@ -3,7 +3,7 @@
 #  -d, --duration=N                Duration of the presentation (in minutes)
 #  -e, --end-time=HH:MM            End time of the presentation
 
-DUR="30"
+DUR="40"
 #ENDTIM='00:25'
 MY_SCREEN=eDP-1
 #MY_SCREEN=DP-1-3

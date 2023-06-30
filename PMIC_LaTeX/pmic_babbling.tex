@@ -70,11 +70,12 @@ Functional-safety helpers in regulator subsystem
 \begin{frame}{About Me}
 %\note[item]{This is the formal me}
 \note[item]{Formal me}
-\note[item]{Linux developer}
-\note[item]{started working}
+\note[item]{Linux drivers}
 \note[item]{ROHM Semiconductor}
+\note[item]{NOKIA clock and sync}
 \note[item]{HW vendor, no forest from the trees.}
 \note[item]{Anyone with insight on how notifiers are or could be used - please explain!}
+\note[item]{Try go fast so people have time to help me understand use cases}
 	\begin{columns}
 	\column{0.58\linewidth}
 		\begin{itemize}
@@ -110,7 +111,7 @@ Functional-safety helpers in regulator subsystem
 \note{Just plug-in the power to socket, whats the big deal?}
 \begin{itemize}
 	\item Processor and peripherals need power
-	\item Can be as simple as a dummy DC power source with correct voltage
+	\item Can it be as simple as a dummy DC power source with correct voltage?
 \end{itemize}
 
 
@@ -279,9 +280,9 @@ More functionality
 \end{columns}
 
 %\note{More needs}
-\note[item]<3>{battery powered devices everywhere}
-\note[item]<3>{Watchdog almost every device has it}
-\note[item]<3>{I have a feeling the importance of func safety increasing}
+\note[item]<3>{battery powered devices everywhere, charging needs power}
+\note[item]<3>{Watchdog almost every device has it. Power off}
+\note[item]<3>{Monitor HW state. I have a feeling the importance of func safety increasing}
 
 \end{frame}
 
@@ -326,6 +327,9 @@ More functionality
 
 \begin{frame}{PMICs}
 
+\note[item] {Recap: Multiple voltages}
+\note[item] {Strict timing of sequences}
+\note[item] {Power saving, wake-up, chargers, watchdog, HW state monitoring}
 \note[item] {PMICs created to support previous use-cases}
 \note[item] {Often SOC specific}
 \note[item] {also generic ones - very customizable (amount of outputs, voltages, sequences, state change controls (I2C, GPIO))}
@@ -414,7 +418,7 @@ PMIC - Power Management Integrated Circuit
 \begin{frame}[t]{Regulator (provider) and consumer}\vspace{4pt}
 
 \note[item]{framework between hardware driver - user}
-\note[item]{regulator API to consumers}
+\note[item]{regulator in-kernel API to consumers}
 \note[item]{framework -\textgreater driver -\textgreater PMIC regs}
 \note[item]{example, sensor driver}
 \note[item]{request enable via regulator API}
@@ -433,6 +437,11 @@ PMIC - Power Management Integrated Circuit
 %-------------- Regulator ops
 
 \begin{frame}[fragile, t]{Regulator driver ops}\vspace{4pt}
+
+\note[item]{proud of this slide. It pretty much requires no talking}
+\note[item]{callbacks are registered to core usingg regulator ops struct}
+\note[item]{shows just a part of functions}
+
 \begin{block}{Regulator driver relies on callbacks}
 Regulator (provider) registers callbacks to regulator framework.
 Framework handles regulators using these ops.
@@ -464,6 +473,8 @@ struct regulator_ops {
 
 \note[item]<2>{regulator-desc static config}
 \note[item]<2>{regulator-config dynamic config like constrains, regmap, device}
+\note[item]<2>{Then just register regulator using regulator register API and device is good to go}
+\note[item]<2>{Thing to note is that typically PMICs have multiple regulators}
 
 \mycfile{include/linux/regulator/driver.h}
 \lstset{language=C}
@@ -490,7 +501,13 @@ regulator_register(struct device *dev,
 
 %-------------- Regulator constraints
 
-\begin{frame}[t]{Regulator constraints}\vspace{4pt} 
+\begin{frame}[t]{Regulator constraints}\vspace{4pt}
+
+\note[item]{You can set limits for regulators.}
+\note[item]{voltage area, boot-on, don't allow disabling, ...}
+\note[item]{Regulator core enforce them. does not pass call to driver}
+\note[item]{device tree, init data, core parses}
+
 \begin{block}{Regulators can have constraints.}
 Not to be mixed with limits discussed at the end of the presentation.
 \end{block}
@@ -653,10 +670,12 @@ Similar for over voltage (ov), under voltage (uv) and temperature (temp)
 
 
 \begin{frame}[fragile]{Callbacks for configuring the limits}
+\note[item]<1>{After core has parsed limits it needs to set them to HW}
+\note[item]<1>{Driver provides the callbacks for that}
 \note[item]<1>{Callbacks for over-current, over- and under-voltage, over temperature}
 \note[item]<1>{Arguments include the limit, severity (PROT, ERR, WARN) and enable/disable}
 \note[item]<2>{Callbacks are among the other regulator ops which is pointed from the regulator description}
-\note[item]<3>{The description with ops is passed to regulator registration}
+\note[item]<2>{The description with ops is passed to regulator registration}
 
 %\textbf{Regulator framework interface:}\vspace{4pt}
 
@@ -707,12 +726,12 @@ struct regulator_dev *[devm_]regulator_register(...,
 %\tiny
 
 \begin{lstlisting}[commentstyle=\color{orange}]
-static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA, int severity, bool enable)
+static int bd9576_set_ocp(struct regulator_dev *rdev, int lim_uA,
+			  int severity, bool enable)
 {
 	/* Return -EINVAL for unsupported configurations */
 	if ((lim_uA && !enable) || (!lim_uA && enable))
 		return -EINVAL;
-
 	/* Select the correct register and appropriate register-value conversion
 	 * for given severity and limit.. */
 	if (severity == REGULATOR_SEVERITY_PROT) {
@@ -1031,7 +1050,6 @@ struct regulator_err_state {
 	int possible_errs;
 };
  \end{lstlisting}
-\pause
 \end{frame}
 
 \begin{frame}[fragile, t]{Re-enabling and simple mapping}
@@ -1045,7 +1063,14 @@ struct regulator_err_state {
 \note[item]<1>{finally, for simple HW where an IRQ can only signal one type of errors, on one regulator, driver can use generic helper called regulator$\_$irq$\_$map$\_$event$\_$simple()}
 
 
+Optional re-enable:
+\scriptsize
 
+\begin{lstlisting}
+int (*renable)(struct regulator_irq_data *rid);
+\end{lstlisting}
+
+\normalsize
 Helper for simple IRQs\\
 \scriptsize
 \mycfile{include/linux/regulator/driver.h}
@@ -1058,12 +1083,6 @@ int regulator_irq_map_event_simple(int irq,
  \end{lstlisting}
 \normalsize
 
-Optional re-enable:
-\scriptsize
-
-\begin{lstlisting}
-int (*renable)(struct regulator_irq_data *rid);
- \end{lstlisting}
 %\pause
 
 \end{frame}
